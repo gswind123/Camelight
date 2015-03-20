@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="DrawAllocation">
+        <ignore path="src/com/camelight/android/util/CameraView.java" />
+    </issue>
+</lint>
