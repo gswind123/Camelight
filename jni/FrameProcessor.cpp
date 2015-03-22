@@ -53,99 +53,82 @@ JNIEXPORT void JNICALL Java_com_camelight_android_util_FrameProcessor_nativeEnha
 /*
  * Class:     com_camelight_android_util_FrameProcessor
  * Method:    nativeAnalyzeMode
+ * @return: default: front-lit=1; back-lit=2; night-scene=3;
  * Signature: (JIIII)I
  */
-JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeAnalyzeMode
-  (JNIEnv * env, jclass cls, jlong addGray, jint x, jint y, jint width, jint height){
-  	Mat mGray = *(Mat*) addGray;
-  	/*something may be wrong with this line: */
-  	Rect faceRect(x,y,width,height);
+JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeAnalyzeMode(
+		JNIEnv * env, jclass cls, jlong addGray, jint x, jint y, jint width,
+		jint height) {
+	Mat mGray = *(Mat*) addGray;
+	/*something may be wrong with this line: */
+	Rect faceRect(x, y, width, height);
 
+	/* if background mean value < dark threshold, then it's dark mode */
 	int thresholdDark = 50;
-	int thresholdContrast = 100;
-	int thresholdBacklit = 24000;
-	unsigned N = mGray.cols * mGray.rows;
+	/* if block deviation > backlit threshold, then it's backlit mode */
+	int thresholdBacklit = 130;
+
 	/* step-1: calculate mean value of each block */
 	/*
 	 ___________
-	| 1 | 2 | 3 |
-	|___|___|___|
-	|   | f |   |
-	|_4_|___|_5_|
-	|___________|
-	*/
-	Rect surroundingRect[5];
+	 | 1 | 2 | 3 |
+	 |___|___|___|
+	 |   | f |   |
+	 |_4_|___|_5_|
+	 |___________|
+	 */
+
 	std::vector<Point> shift;
-	shift.push_back(Point(-faceRect.x, -faceRect.y));
-	shift.push_back(Point(0,-faceRect.y));
-	shift.push_back(Point(faceRect.width,-faceRect.y));
-	shift.push_back(Point(-faceRect.x,0));
-	shift.push_back(Point(faceRect.width,0));
-
-	surroundingRect[0].width = faceRect.x;
-	surroundingRect[0].height = faceRect.y;
-	surroundingRect[1].width = faceRect.width;
-	surroundingRect[1].height = faceRect.y;
-	surroundingRect[2].width = mGray.cols-(faceRect.x+faceRect.width);
-	surroundingRect[2].height = faceRect.y;
-	surroundingRect[3].width = faceRect.x;
-	surroundingRect[3].height = faceRect.height;
-	surroundingRect[4].width = mGray.cols-(faceRect.x+faceRect.width);
-	surroundingRect[4].height = faceRect.height;
-
+	shift.push_back(Point(-faceRect.width, -faceRect.height));
+	shift.push_back(Point(0, -faceRect.height));
+	shift.push_back(Point(faceRect.width, -faceRect.height));
+	shift.push_back(Point(-faceRect.width, 0));
+	shift.push_back(Point(faceRect.width, 0));
 
 	/* calculate the faceRect mean value */
-	int meanValue[6] = {0};
+	Rect surroundingRect;
+	Mat surroundingMat;
+	Rect mask = Rect(0, 0, mGray.cols, mGray.rows); //in case out of border;
+	int meanValue[6] = { 0 };
 
-	Mat surroundingMat = mGray(faceRect);
+	for (unsigned index = 0; index < 5; ++index) {
+		surroundingRect.x = faceRect.x + shift[index].x;
+		surroundingRect.y = faceRect.y + shift[index].y;
+		surroundingRect.width = faceRect.width;
+		surroundingRect.height = faceRect.height;
+		surroundingRect &= mask;
+		surroundingMat = mGray(surroundingRect);
+		meanValue[index] = CalculateMeanValue(surroundingMat);
+	}
+	Mat tmp_mat = mGray(faceRect);
+	meanValue[5] = CalculateMeanValue(tmp_mat);
+
+	/* step-1: calculate deviation of each block: */
+	unsigned blockDeviation = 0;
+	for (int i = 0; i < 5; ++i) {
+		blockDeviation = (meanValue[i] - meanValue[5]) ^ 2;
+	}
+
+	/* step-2: calculate mean value of the whole above chin image: */
 	unsigned sum = 0;
-
-	for (unsigned index = 0; index < 5; ++index)
-	{
-		surroundingRect[index].x = faceRect.x + shift[index].x;
-		surroundingRect[index].y = faceRect.y + shift[index].y;
-		surroundingMat = mGray(surroundingRect[index]);
-		meanValue[index] = CalculateMeanValue(&surroundingMat);
-		sum += surroundingRect[index].width*surroundingRect[index].height*meanValue[index];
-	}
-	Mat gray_mat = mGray(faceRect);
-	meanValue[5] = CalculateMeanValue(&gray_mat);
-
-	/* step-2: calculate mean value of the whole image: */
-	sum += meanValue[5];
-	int m = sum / N;
-	if (m < thresholdDark)
-	{
-		return (jint)3;
-	}
-
-	/* step-3: calculate stardard deviation: */
-	for (int i = 0; i < mGray.rows; ++i)
-	{
-		for (int j = 0; j < mGray.cols; ++j)
-		{
-			sum += (mGray.at<uchar>(i,j)-meanValue[5])^2;
+	for (int i = 0; i < faceRect.y + faceRect.height; i++) {
+		for (int j = 0; j < mGray.cols; j++) {
+			sum += mGray.at<uchar>(i, j);
 		}
 	}
+	//analyze the background, without the face rect;
+	sum -= meanValue[5] * faceRect.width * faceRect.height;
+	unsigned bgdAvg = sum / (mGray.cols * (faceRect.y + faceRect.height));
 
-	int s = sum / N;
-	/* if low contrast: it means front-lit */
-	if (s < thresholdContrast)
-	{
-		return (jint)1;
-	}
-
-	/* step-4: calculate deviation of each block: */
-	for (int i = 0; i < 5; ++i)
-	{
-		sum = (meanValue[i]-meanValue[5])^2;
-	}
-	if (sum > thresholdBacklit)
-	{
+	if (blockDeviation > thresholdBacklit && bgdAvg > thresholdDark) {
 		return (jint)2;
 	}
 
-	return (jint)0;
+	if (blockDeviation < thresholdBacklit && bgdAvg < thresholdDark) {
+		return (jint)3;
+	}
+
+	return (jint)1;
 }
 
 /*
@@ -203,37 +186,7 @@ JNIEXPORT void JNICALL Java_com_camelight_android_util_FrameProcessor_nativeDete
   (JNIEnv * env, jclass cls, jlong addGray){
 	return ;
 }
-//==============================================================================
 
-
-/*
- * Class:     com_camelight_android_util_FrameProcessor
- * Method:    nativeGetIlluminationMap
- * Signature: (J)Z
- */
-//JNIEXPORT jboolean JNICALL Java_com_camelight_android_util_FrameProcessor_nativeGetIlluminationMap
-//  (JNIEnv *, jobject, jlong addGray)
-//  {
-//  	Mat mGray = *(Mat*) addGray;
-//
-//  	Mat dctImg = nativeDCTFunction(mGray);
-//  	Mat coor = Zigzag(mGray);
-//  	Discard(dctImg, coor);
-//  	mGray.release();
-//
-//  	Mat dst;
-//  	idct(dctImg, dst);
-//  	dst.convertTo(dst, CV_8U);
-//  	coor.release();
-//
-//  	int thd = Otsu(dst);
-//  	threshold(dst, dst, thd, 255, CV_THRESH_BINARY);
-//
-//  	ConvertMatToAddr(dst, *(Mat*)addGray);
-//  	return true;
-//  	/*TODO: other conditions return false;
-//  	*/
-//  }
 
 #ifdef __cplusplus
 }

@@ -18,6 +18,7 @@ import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.FrameLayout;
 
@@ -34,17 +35,12 @@ import com.camelight.android.view.util.CameraView;
 public class DetectModeInteraction extends Interaction {
 	
 	private DetectModeCacheBean cacheBean_ = null;
-	private boolean isFaceDetected = false;
-	
-	
-	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onInteractStart(CacheBean param) {
 		DetectModeCacheBean cache_bean = checkParam(param);
 		if(cache_bean == null) {
 			return false;
 		}
-		isFaceDetected  = false;
 		return true;
 	}
 
@@ -70,7 +66,6 @@ public class DetectModeInteraction extends Interaction {
 			org.opencv.core.Rect face_rect = new org.opencv.core.Rect(
 					android_rect.left,android_rect.top,android_rect.width(),android_rect.height());
 			cache_bean.mode_ = FrameProcessor.AnalyzeMode(gray.nativeObj, face_rect);
-			isFaceDetected = true;
 			return InteractState.STOP;
 		}
 		return InteractState.CONTINUE;

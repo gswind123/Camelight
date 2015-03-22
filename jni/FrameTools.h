@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-int CalculateMeanValue(cv::Mat * p_mat);
+int CalculateMeanValue(cv::Mat & mat);
 
 void Assign(cv::Mat &output,unsigned i, unsigned h, unsigned v);
 

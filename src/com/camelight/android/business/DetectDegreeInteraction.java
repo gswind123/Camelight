@@ -58,6 +58,7 @@ public class DetectDegreeInteraction extends Interaction{
 			Mat face_mat = gray.submat(rect.top, rect.bottom, rect.left, rect.right);
 			Mat fixed_mat = new Mat(160, 160, CvType.CV_8UC1);
 			Imgproc.resize(face_mat, fixed_mat, fixed_mat.size());
+			FrameProcessor.CalculateLightCoordinate(fixed_mat.nativeObj);
 			Bitmap face_bm = Bitmap.createBitmap(fixed_mat.cols(), fixed_mat.rows(), Config.RGB_565);
 			Utils.matToBitmap(fixed_mat, face_bm);
 			int index = (int)FrameProcessor.Predict(face_bm);

@@ -6,9 +6,8 @@ using namespace cv;
 extern "C" {
 #endif
 
-int CalculateMeanValue(Mat * p_src)
+int CalculateMeanValue(Mat & src)
 {
-	Mat & src = *p_src;
 	unsigned sum = 0;
 	for (unsigned i = 0; i < src.rows; ++i)
 	{
@@ -60,8 +59,8 @@ Mat nativeDCTFunction(Mat &img)
 
     // Grayscale image is 8bits per pixel,
     // but dct() method wants float values!
-    Mat img3 = Mat( img2.rows, img2.cols, CV_32F);
-    img2.convertTo(img3, CV_32F);
+    Mat img3 = Mat( img2.rows, img2.cols, CV_32FC1);
+    img2.convertTo(img3, CV_32FC1);
 
     // Let's do the DCT now: image => frequencies
     Mat freq;

@@ -1,13 +1,24 @@
 package com.camelight.android.business;
 
+import javax.security.auth.PrivateCredentialPermission;
+
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.PointF;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.DetectDegreeCacheBean;
+import com.camelight.android.view.CameraActivity;
+import com.camelight.android.view.util.PropertyAnimation;
+import com.camelight.android.view.util.PropertyAnimator;
 
 public class FrontLightGuideInteraction extends Interaction{
 
@@ -17,6 +28,68 @@ public class FrontLightGuideInteraction extends Interaction{
 	private Interactor detectDegreeInteractor_ = null;
 	private Thread detectDegreeThread_ = null;
 	private Handler msgHandler_ = null;
+	private PropertyAnimator animator_ = new PropertyAnimator();
+	private PropertyAnimation degreeAnimation_ = new PropertyAnimation() {
+		
+		private View degreeView_ = null;
+		private View faceLeft_ = null;
+		private View faceRight_ = null;
+		private View sunLeft_ = null;
+		private View sunRight_ = null;
+		private View arrowLeft_ = null;
+		private View arrowRight_ = null;
+		private int curDirection_ = 0;
+		
+		/*
+		 * @param dir:1,left; 2,right
+		 * */
+		private void setDirection(int dir){
+			if(degreeView_ == null) {
+				return ;
+			}
+			int vis_dir_left = View.GONE;
+			int vis_dir_right = View.GONE;
+			if(dir == 1) {
+				vis_dir_left = View.VISIBLE;
+			}else if(dir == 2){
+				vis_dir_right = View.VISIBLE;
+			}
+			faceRight_.setVisibility(vis_dir_left);
+			sunLeft_.setVisibility(vis_dir_left);
+			arrowLeft_.setVisibility(vis_dir_left);
+			
+			faceLeft_.setVisibility(vis_dir_right);
+			sunRight_.setVisibility(vis_dir_right);
+			arrowRight_.setVisibility(vis_dir_right);
+			curDirection_ = dir;
+		}
+		
+		@Override
+		public boolean update(long tweenMillsec) {
+			if(degree_ != null) {
+			}
+			return true;
+		}
+		
+		@Override
+		public boolean start() {
+			Activity act = (Activity) cacheBean_.context_;
+			LayoutInflater inflater = (LayoutInflater)act.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			degreeView_ = inflater.inflate(R.layout.front_light_show_degree_layout, (ViewGroup)act.findViewById(android.R.id.content));
+			faceLeft_ = degreeView_.findViewById(R.id.face_left);
+			faceRight_ = degreeView_.findViewById(R.id.face_right);
+			sunLeft_ = degreeView_.findViewById(R.id.sun_left);
+			sunRight_ = degreeView_.findViewById(R.id.sun_right);
+			arrowLeft_ = degreeView_.findViewById(R.id.arrow_left);
+			arrowRight_ = degreeView_.findViewById(R.id.arrow_right);
+			return true;
+		}
+		
+		@Override
+		public void finish() {
+			
+		}
+	};
 	
 	@Override
 	public boolean onInteractStart(CacheBean param) {
