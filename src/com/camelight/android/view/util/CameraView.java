@@ -168,7 +168,7 @@ public class CameraView extends SurfaceView
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		viewWidth_ = width;
 		viewHeight_ = height;
-		initCamera(CAMERA_FACE_BACK ,width, height);
+		initCamera(CAMERA_FACE_FRONT ,width, height);
 	}
 	
 	
