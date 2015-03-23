@@ -38,7 +38,7 @@ public class FrontLightGuideInteraction extends Interaction{
 	private PropertyAnimation degreeAnimation_ = new PropertyAnimation() {
 		private final int LEFT = 1;
 		private final int RIGHT=2;
-		private final float SPEED = 0.008f/** pixels per millsec */;
+		private final float SPEED = 0.002f/** pixels per millsec */;
 		
 		private View degreeView_ = null;
 		private View faceLeft_ = null;
@@ -107,12 +107,15 @@ public class FrontLightGuideInteraction extends Interaction{
 					/** It doesn't need to move*/
 					return true;
 				}
-				float speed_factor = 1.f;
+				float speed_factor;
 				float sign = 1.f;
 				if(direction != curDirection_) {
 					sign = -1.f;
 					speed_factor = dst_width_pixel + cur_width;
 				} else {
+					if(cur_width>dst_width_pixel) {
+						sign = -1.f;
+					}
 					speed_factor = Math.abs(dst_width_pixel - cur_width);
 				}
 				
