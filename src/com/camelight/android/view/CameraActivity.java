@@ -43,6 +43,8 @@ import com.camelight.android.business.DetectModeInteraction;
 import com.camelight.android.business.FrontLightGuideInteraction;
 import com.camelight.android.business.Interaction;
 import com.camelight.android.business.Interactor;
+import com.camelight.android.business.NightSceneGuideInteraction;
+import com.camelight.android.model.CalculateDistanceCacheBean;
 import com.camelight.android.model.CameraFrame;
 import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
@@ -194,6 +196,19 @@ public class CameraActivity extends FragmentActivity {
     	interactor_.startInteract(30);
     }
     
+    
+    private void startNightSceneGuide() {
+		CalculateDistanceCacheBean bean = new CalculateDistanceCacheBean();
+		bean.camera_ = camera_;
+		bean.context_ = this;
+		bean.layout_ = cameraLayout_;
+		interactor_.setParam(bean);
+		NightSceneGuideInteraction night_scene = new NightSceneGuideInteraction();
+		interactor_.setInteraction(night_scene);
+		interactor_.startInteract(30);
+		
+	}
+    
     public void startGuide(BusinessMode mode) {
     	switch(mode) {
     	case BACKLIGHT:
@@ -202,6 +217,7 @@ public class CameraActivity extends FragmentActivity {
     		startFrontLightGuide();
     		break;
     	case NIGHT:
+    		startNightSceneGuide();
     		break;
     	default: break;
     	}
