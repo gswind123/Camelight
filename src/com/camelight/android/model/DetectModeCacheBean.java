@@ -11,7 +11,7 @@ import com.camelight.android.view.util.CameraView;
 public class DetectModeCacheBean extends CacheBean {
 	public Context context_ = null;
 	public CameraView camera_ = null;
-	public FrameLayout frame_ = null;
+	public FrameLayout layout_ = null;
 	
 	public Face faces_[] = null;
 	public Rect selectedFace_ = new Rect();

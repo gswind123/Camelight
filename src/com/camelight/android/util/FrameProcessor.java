@@ -83,6 +83,9 @@ public class FrameProcessor {
 			-120	,	+00,
 			-130	,	+20,
 			};
+	
+	static public int PREDICT_WIDTH = 160;
+	static public int PREDICT_HEIGHT = 160;
 // Methods:
 	/* constructor with a test native function */
 
@@ -118,8 +121,11 @@ public class FrameProcessor {
 	}
 
 	/* determine the light/sun position */
-	static public void CalculateLightCoordinate(long add) {
-		nativeCalculateLightCoordinate(add);
+	static public void GetIlluminationMap(long add) {
+		boolean result = nativeGetIlluminationMap(add);
+		if (result) {
+			//TODO: if false;
+		}
 	}
 
 	/* determine the best distance between subject and operator. */
@@ -128,12 +134,15 @@ public class FrameProcessor {
 		return bestDistance;
 	}
 	
+	/*
+	 * @Warning faceBitmap must be a bitmap with PREDICT_WIDTH and PREDICT_HEIGHT
+	 * */
     static public double Predict(Bitmap faceBitmap){
     	if(model_ == null) {
     		return 0.f;
     	}
-    	int width = 160;
-    	int height = 160;
+    	int width = PREDICT_WIDTH;
+    	int height = PREDICT_HEIGHT;
     	int w1= width/20;
        	int h1= height/20;
        	int fnum=w1*h1;
@@ -184,7 +193,7 @@ public class FrameProcessor {
 	 * @return 1=Front-lit; 2=Back-lit; 3=Night Scene; 0=others
 	 * */
 	native public static int nativeAnalyzeMode(long add, int left, int top, int right, int bottom);
-	native public static int nativeCalculateLightCoordinate(long add);
+	native public static boolean nativeGetIlluminationMap(long add);
 	native public static float nativeCalculateBestDistance(long add);
 	native public static void nativeDetectFace(long add);
 	

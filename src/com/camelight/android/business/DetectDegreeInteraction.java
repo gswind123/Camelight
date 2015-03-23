@@ -3,6 +3,7 @@ package com.camelight.android.business;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.engine.OpenCVEngineInterface;
 import org.opencv.imgproc.Imgproc;
 
 import android.graphics.Bitmap;
@@ -52,13 +53,12 @@ public class DetectDegreeInteraction extends Interaction{
 			/*TODO:添加优化的人脸选择*/
 			Face face = faces[0];
 			Rect rect = detector.getFaceRect(face);
-			Mat gray = ImageProcessor.bitmap2GrayMat(bm);
-			
-			//FrameProcessor.CalculateLightCoordinate(gray.nativeObj);
-			Mat face_mat = gray.submat(rect.top, rect.bottom, rect.left, rect.right);
-			Mat fixed_mat = new Mat(160, 160, CvType.CV_8UC1);
+			Mat rgba = ImageProcessor.bitmap2Mat(bm);
+			org.opencv.core.Rect cv_rect = new org.opencv.core.Rect(rect.left, rect.top, rect.width(), rect.height());
+			Mat face_mat = new Mat(rgba, cv_rect);
+			Mat fixed_mat = new Mat(FrameProcessor.PREDICT_HEIGHT, FrameProcessor.PREDICT_WIDTH, CvType.CV_8UC4);
 			Imgproc.resize(face_mat, fixed_mat, fixed_mat.size());
-			FrameProcessor.CalculateLightCoordinate(fixed_mat.nativeObj);
+			FrameProcessor.GetIlluminationMap(fixed_mat.nativeObj);
 			Bitmap face_bm = Bitmap.createBitmap(fixed_mat.cols(), fixed_mat.rows(), Config.RGB_565);
 			Utils.matToBitmap(fixed_mat, face_bm);
 			int index = (int)FrameProcessor.Predict(face_bm);

@@ -121,7 +121,7 @@ JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeAnal
 	unsigned bgdAvg = sum / (mGray.cols * (faceRect.y + faceRect.height));
 
 	if (blockDeviation > thresholdBacklit && bgdAvg > thresholdDark) {
-		return (jint)2;
+//		return (jint)2;
 	}
 
 	if (blockDeviation < thresholdBacklit && bgdAvg < thresholdDark) {
@@ -136,11 +136,15 @@ JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeAnal
  * Method:    nativeCalculateLightCoordinate
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeCalculateLightCoordinate
+JNIEXPORT jboolean JNICALL Java_com_camelight_android_util_FrameProcessor_nativeGetIlluminationMap
   (JNIEnv * env, jclass cls, jlong addGray){
 	Mat mGray = *(Mat*) addGray;
+	if(mGray.empty() || mGray.data == NULL)
+		return false;
+	vector<Mat> planes;
+	split(mGray,planes);
 
-	Mat dctImg = nativeDCTFunction(mGray);
+	Mat dctImg = nativeDCTFunction(planes[0]);
 	Mat coor = Zigzag(mGray);
 	Discard(dctImg, coor);
 	mGray.release();
@@ -154,7 +158,7 @@ JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeCalc
 	threshold(dst, dst, thd, 255, CV_THRESH_BINARY);
 
 	ConvertMatToAddr(dst, *(Mat*)addGray);
-	return 1;
+	return true;
 }
 
 /*

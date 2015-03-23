@@ -156,7 +156,6 @@ public class CameraView extends SurfaceView
 
 	@Override
 	public void surfaceCreated(SurfaceHolder arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -165,7 +164,6 @@ public class CameraView extends SurfaceView
 		disconnectCamera();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		viewWidth_ = width;

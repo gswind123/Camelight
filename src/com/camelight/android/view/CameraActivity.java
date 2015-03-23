@@ -15,6 +15,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 import android.content.Context;
+import android.graphics.AvoidXfermode.Mode;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -55,7 +56,7 @@ public class CameraActivity extends FragmentActivity {
 	private ImageView btnCapture_;
 	private ImageView preView_;
 	private ImageView btnGuide_;
-	private FrameLayout cameraFrame_;
+	private FrameLayout cameraLayout_;
 	private Interactor interactor_;
 	
 	private DetectModeCacheBean detectModeCacheBean_;
@@ -67,7 +68,8 @@ public class CameraActivity extends FragmentActivity {
 					String text = "人脸识别成功，模式:"+detectModeCacheBean_.mode_.description_;
 					Toast toast =  Toast.makeText(CameraActivity.this, text, Toast.LENGTH_SHORT);
 					toast.show();
-					startGuide(detectModeCacheBean_.mode_);
+					//startGuide(detectModeCacheBean_.mode_);
+					startGuide(BusinessMode.FRONTLIGHT);
 				}
 			}
 		}
@@ -77,7 +79,6 @@ public class CameraActivity extends FragmentActivity {
 		@Override
 		public void onManagerConnected(int status) {
 			System.loadLibrary("frame_processor");
-			//==================================
             try {
                 // load cascade file from application resources
                 InputStream is = getResources().openRawResource(R.raw.model);
@@ -128,14 +129,13 @@ public class CameraActivity extends FragmentActivity {
         camera_ = (CameraView) findViewById(R.id.camera_surface);
         btnCapture_ = (ImageView) findViewById(R.id.btn_take_photo);
         btnGuide_ = (ImageView) findViewById(R.id.btn_start_guide);
-        cameraFrame_ = (FrameLayout) findViewById(R.id.camera_frame);
+        cameraLayout_ = (FrameLayout) findViewById(R.id.camera_frame);
         Handler handler = new Handler();
         interactor_ = new Interactor(handler);
         
         btnGuide_.setOnClickListener(onStartGuideListener);
         btnCapture_.setOnClickListener(new OnClickListener() {
 			
-			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View v) {
 				camera_.takePicture();
@@ -175,7 +175,7 @@ public class CameraActivity extends FragmentActivity {
 		DetectModeCacheBean bean = new DetectModeCacheBean();
 		bean.camera_ = camera_;
 		bean.context_ = CameraActivity.this;
-		bean.frame_ = cameraFrame_;
+		bean.layout_ = cameraLayout_;
 		interactor_.setParam(bean);
 		detectModeCacheBean_ = bean;
 		DetectModeInteraction detect_mode = new DetectModeInteraction();
@@ -187,10 +187,11 @@ public class CameraActivity extends FragmentActivity {
     	DetectDegreeCacheBean bean = new DetectDegreeCacheBean();
     	bean.camera_ = camera_;
     	bean.context_ = this;
+    	bean.layout_ = cameraLayout_;
     	interactor_.setParam(bean);
     	FrontLightGuideInteraction front_light = new FrontLightGuideInteraction();
     	interactor_.setInteraction(front_light);
-    	interactor_.startInteract(2000);
+    	interactor_.startInteract(30);
     }
     
     public void startGuide(BusinessMode mode) {

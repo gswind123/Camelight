@@ -55,7 +55,7 @@ Mat nativeDCTFunction(Mat &img)
         h2 = h;
     else
         h2 = h+1;
-    copyMakeBorder(img, img2, 0, h2-h, 0, w2-w, IPL_BORDER_REPLICATE);
+    copyMakeBorder(img, img2, 0, h2-h, 0, w2-w, IPL_BORDER_REPLICATE);//BORDER_CONSTANT
 
     // Grayscale image is 8bits per pixel,
     // but dct() method wants float values!

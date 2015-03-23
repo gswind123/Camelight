@@ -61,11 +61,11 @@ public class DetectModeInteraction extends Interaction {
 		if(faces != null) {
 			cache_bean.faces_ = faces;
 			cache_bean.selectedFrame_ = cur_frame;
-			Mat gray = ImageProcessor.bitmap2GrayMat(bm);
+			Mat rgba = ImageProcessor.bitmap2Mat(bm);
 			Rect android_rect = detector.getFaceRect(faces[0]);
 			org.opencv.core.Rect face_rect = new org.opencv.core.Rect(
 					android_rect.left,android_rect.top,android_rect.width(),android_rect.height());
-			cache_bean.mode_ = FrameProcessor.AnalyzeMode(gray.nativeObj, face_rect);
+			cache_bean.mode_ = FrameProcessor.AnalyzeMode(rgba.nativeObj, face_rect);
 			return InteractState.STOP;
 		}
 		return InteractState.CONTINUE;
@@ -89,7 +89,7 @@ public class DetectModeInteraction extends Interaction {
 	private DetectModeCacheBean checkParam(CacheBean param) {
 		if(param instanceof DetectModeCacheBean) {
 			DetectModeCacheBean cache_bean = (DetectModeCacheBean) param;
-			if(cache_bean.camera_ != null && cache_bean.frame_ != null && cache_bean.context_ != null) {
+			if(cache_bean.camera_ != null && cache_bean.layout_ != null && cache_bean.context_ != null) {
 				cacheBean_ = cache_bean;
 				return cache_bean;
 			}

@@ -50,12 +50,12 @@ public class ImageProcessor {
 		return stream.toByteArray();
 	}
 	
-	static public Mat bitmap2GrayMat(Bitmap bm){
+	static public Mat bitmap2Mat(Bitmap bm){
 		if(bm == null) {
 			return new Mat();
 		}
-		Mat gray = new Mat(bm.getHeight(), bm.getWidth(), CvType.CV_8UC1);
-		Utils.bitmapToMat(bm, gray);
-		return gray;
+		Mat rgba = new Mat();
+		Utils.bitmapToMat(bm, rgba);
+		return rgba;
 	}
 }

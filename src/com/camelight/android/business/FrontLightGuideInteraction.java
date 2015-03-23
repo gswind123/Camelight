@@ -1,21 +1,27 @@
 package com.camelight.android.business;
 
+import java.security.PublicKey;
+
 import javax.security.auth.PrivateCredentialPermission;
 
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.PointF;
+import android.graphics.Path.Direction;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.DetectDegreeCacheBean;
+import com.camelight.android.util.DeviceUtil;
 import com.camelight.android.view.CameraActivity;
 import com.camelight.android.view.util.PropertyAnimation;
 import com.camelight.android.view.util.PropertyAnimator;
@@ -30,6 +36,9 @@ public class FrontLightGuideInteraction extends Interaction{
 	private Handler msgHandler_ = null;
 	private PropertyAnimator animator_ = new PropertyAnimator();
 	private PropertyAnimation degreeAnimation_ = new PropertyAnimation() {
+		private final int LEFT = 1;
+		private final int RIGHT=2;
+		private final float SPEED = 0.008f/** pixels per millsec */;
 		
 		private View degreeView_ = null;
 		private View faceLeft_ = null;
@@ -40,6 +49,11 @@ public class FrontLightGuideInteraction extends Interaction{
 		private View arrowRight_ = null;
 		private int curDirection_ = 0;
 		
+		private TextView degreeText_ = null;
+		
+		private float dstWidthDip_ = 0.f;
+		private float minWidth_ = 0.f;
+		
 		/*
 		 * @param dir:1,left; 2,right
 		 * */
@@ -49,9 +63,9 @@ public class FrontLightGuideInteraction extends Interaction{
 			}
 			int vis_dir_left = View.GONE;
 			int vis_dir_right = View.GONE;
-			if(dir == 1) {
+			if(dir == LEFT) {
 				vis_dir_left = View.VISIBLE;
-			}else if(dir == 2){
+			}else if(dir == RIGHT){
 				vis_dir_right = View.VISIBLE;
 			}
 			faceRight_.setVisibility(vis_dir_left);
@@ -64,30 +78,97 @@ public class FrontLightGuideInteraction extends Interaction{
 			curDirection_ = dir;
 		}
 		
+		private View getArrowView(){
+			if(curDirection_ == LEFT){
+				return arrowLeft_;
+			} else {
+				return arrowRight_;
+			}
+		}
+		
+		/*
+		 * Here we map 130 degrees to 400dps.
+		 * 5	degrees=> 25dps;
+		 * 130	degrees=> 400dps;
+		 * */
 		@Override
 		public boolean update(long tweenMillsec) {
 			if(degree_ != null) {
+				dstWidthDip_ = 25+Math.abs(degree_.x);
+				int direction = (degree_.x<0)?LEFT:RIGHT;
+				View arrow = getArrowView();
+				ViewGroup.LayoutParams param = arrow.getLayoutParams();
+				if(param == null) {
+					return false;
+				}
+				float cur_width = (float)param.width;
+				float dst_width_pixel = DeviceUtil.getPixelFromDip(cacheBean_.context_, dstWidthDip_);
+				if((int)(cur_width) == (int)(dst_width_pixel)) {
+					/** It doesn't need to move*/
+					return true;
+				}
+				float speed_factor = 1.f;
+				float sign = 1.f;
+				if(direction != curDirection_) {
+					sign = -1.f;
+					speed_factor = dst_width_pixel + cur_width;
+				} else {
+					speed_factor = Math.abs(dst_width_pixel - cur_width);
+				}
+				
+				/** Here when the dst value is too close to cur condition,move it directly
+				 *  to the dst.Ohterwise put a movement on it*/
+				if(speed_factor < 12.f) {
+					cur_width = dst_width_pixel;
+				} else {
+					float dist = sign*SPEED*tweenMillsec;
+					cur_width += dist;
+				}
+				
+				/** When the width is too small and still needs to move,
+				 *  it means to change the direction*/
+				if(cur_width < minWidth_) {
+					int new_dir = (curDirection_==LEFT)?RIGHT:LEFT;
+					setDirection(new_dir);
+					arrow = getArrowView();
+					param = arrow.getLayoutParams();
+					cur_width = minWidth_;
+				}
+				
+				/** finally set a new width to the arrow*/
+				param.width = (int)cur_width;
+				arrow.setLayoutParams(param);
+				
+				String text = degree_.x+","+degree_.y;
+				degreeText_.setText(text);
 			}
 			return true;
 		}
 		
 		@Override
 		public boolean start() {
-			Activity act = (Activity) cacheBean_.context_;
+			CameraActivity act = (CameraActivity) cacheBean_.context_;
 			LayoutInflater inflater = (LayoutInflater)act.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			degreeView_ = inflater.inflate(R.layout.front_light_show_degree_layout, (ViewGroup)act.findViewById(android.R.id.content));
+			degreeView_ = inflater.inflate(R.layout.front_light_show_degree_layout, null);
 			faceLeft_ = degreeView_.findViewById(R.id.face_left);
 			faceRight_ = degreeView_.findViewById(R.id.face_right);
 			sunLeft_ = degreeView_.findViewById(R.id.sun_left);
 			sunRight_ = degreeView_.findViewById(R.id.sun_right);
 			arrowLeft_ = degreeView_.findViewById(R.id.arrow_left);
 			arrowRight_ = degreeView_.findViewById(R.id.arrow_right);
+			degreeText_ = (TextView)degreeView_.findViewById(R.id.degree_text);
+			minWidth_ = DeviceUtil.getPixelFromDip(cacheBean_.context_, 25.f);
+			setDirection(LEFT);
+			/** add the view to the outer frame layout*/
+			int wrap_content = ViewGroup.LayoutParams.WRAP_CONTENT;
+			ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(wrap_content, wrap_content);
+			cacheBean_.layout_.addView(degreeView_, lp);
 			return true;
 		}
 		
 		@Override
 		public void finish() {
-			
+			cacheBean_.layout_.removeView(degreeView_);
 		}
 	};
 	
@@ -99,6 +180,7 @@ public class FrontLightGuideInteraction extends Interaction{
 		}
 		cacheBean_.uiInteraction_ = this;
 		startDetectDegree();
+		animator_.addAnimation(this.degreeAnimation_);
 		return true;
 	}
 
@@ -108,11 +190,12 @@ public class FrontLightGuideInteraction extends Interaction{
 		if(bean == null) {
 			return InteractState.CONTINUE;
 		}
-		if(degree_ != null) {
-			String text="获取到了角度："+degree_.x+","+degree_.y;
-			Toast toast = Toast.makeText(cacheBean_.context_,text, Toast.LENGTH_SHORT);
-			toast.show();
-		}
+		animator_.update();
+//		if(degree_ != null) {
+//			String text="获取到了角度："+degree_.x+","+degree_.y;
+//			Toast toast = Toast.makeText(cacheBean_.context_,text, Toast.LENGTH_SHORT);
+//			toast.show();
+//		}
 		return InteractState.CONTINUE;
 	}
 
@@ -122,6 +205,7 @@ public class FrontLightGuideInteraction extends Interaction{
 		if(bean == null) {
 			return ;
 		}
+		animator_.removeAnimation(this.degreeAnimation_);
 		if(detectDegreeInteractor_ != null && detectDegreeInteractor_.isRunning()) {
 			detectDegreeInteractor_.stopInteract();
 		}
@@ -130,7 +214,7 @@ public class FrontLightGuideInteraction extends Interaction{
 	private DetectDegreeCacheBean checkParam(CacheBean param) {
 		if(param != null && param instanceof DetectDegreeCacheBean) {
 			DetectDegreeCacheBean bean = (DetectDegreeCacheBean)param;
-			if(bean.context_ == null || bean.camera_ == null) {
+			if(bean.context_ == null || bean.camera_ == null || bean.layout_ == null) {
 				return null;
 			}
 			cacheBean_ = bean;
