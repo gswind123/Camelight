@@ -1,0 +1,76 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_layout"
+    android:soundEffectsEnabled="false"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#90000000"
+    android:orientation="vertical"
+    android:paddingTop="80dp"
+    android:paddingLeft="50dp"
+    android:paddingRight="50dp">
+	    <TextView
+	        android:id="@+id/mode_detected_text"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        style="@style/text_18_ffffff"
+	        android:gravity="center" 
+	        android:text="@string/mode_detected" />
+	    <TextView
+	        android:id="@+id/click_to_change_mode_text"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        style="@style/text_18_ffffff"
+	        android:layout_marginBottom="10dp"
+	        android:gravity="center" 
+	        android:text="@string/click_to_change_mode" />
+		<LinearLayout
+		    android:id="@+id/detected_mode"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:gravity="center_vertical"
+		    android:padding="10dp"
+		    android:orientation="horizontal"
+		    android:background="@drawable/select_mode_item_selector">
+		    <ImageView 
+		        android:id="@+id/detected_mode_image"
+		        android:layout_width="40dp"
+		        android:layout_height="40dp"
+		        android:scaleType="centerCrop"
+		        android:src="@drawable/pic_front_light_mode"/>
+		    <TextView 
+		        android:id="@+id/detected_mode_text"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:gravity="center"
+		        android:text="@string/front_light_mode"
+		        style="@style/text_18_000000"/>
+		</LinearLayout>
+		<TextView
+	        android:id="@+id/or_text"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        style="@style/text_18_ffffff"
+	        android:gravity="center" 
+	        android:layout_marginTop="10dp"
+	        android:layout_marginBottom="10dp"
+	        android:text="@string/or_text" />
+		<LinearLayout
+		    android:id="@+id/confirm_mode"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:gravity="center_vertical"
+		    android:padding="10dp"
+		    android:orientation="horizontal"
+		    android:background="@drawable/select_mode_item_selector">
+		    <TextView 
+		        android:id="@+id/confirm_mode_text"
+		        android:layout_width="match_parent"
+		        android:layout_height="40dp"
+		        android:gravity="center"
+		        android:text="@string/confirm_this_mode"
+		        style="@style/text_18_000000"/>
+		</LinearLayout>
+	    
+</LinearLayout>
