@@ -2,11 +2,6 @@ package com.camelight.android.view.util;
 
 import java.util.ArrayList;
 
-import android.view.animation.Interpolator;
-
-import com.camelight.android.business.FrontLightGuideInteraction;
-import com.camelight.android.model.CacheBean;
-
 /*
  * This animator is to enable some continuous animations, not some
  * tween animations,but some animations that needs to keep updating and

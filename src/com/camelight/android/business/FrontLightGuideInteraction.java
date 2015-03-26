@@ -1,22 +1,14 @@
 package com.camelight.android.business;
 
-import java.security.PublicKey;
-
-import javax.security.auth.PrivateCredentialPermission;
-
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.PointF;
-import android.graphics.Path.Direction;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
@@ -194,8 +186,8 @@ public class FrontLightGuideInteraction extends Interaction{
 			return InteractState.CONTINUE;
 		}
 		animator_.update();
-//		if(degree_ != null) {
-//			String text="获取到了角度："+degree_.x+","+degree_.y;
+//		if(distance_ != null) {
+//			String text="获取到了角度："+distance_.x+","+distance_.y;
 //			Toast toast = Toast.makeText(cacheBean_.context_,text, Toast.LENGTH_SHORT);
 //			toast.show();
 //		}

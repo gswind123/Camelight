@@ -16,73 +16,17 @@ import com.camelight.android.business.BusinessMode;
 public class FrameProcessor {
 // Variables:
 	private static svm_model model_ = null;
-	private static int dataTable_[]= {
-			0,		0,
-			+0,		+00,
-			+0,		+20,
-			+0,		+45,
-			+0,		+90,
-			+0,		-20,
-			+0,		-35,
-			+5,		+10,
-			+5,		-10,
-			+10,	+00,
-			+10,	-20,
-			+15,	+20,
-			+20,	+10,
-			+20,	-10,
-			+20,	-40,
-			+25,	+00,
-			+35,	+15,
-			+35,	+40,
-			+35,	+65,
-			+35,	-20,
-			+50,	+00,
-			+50,	-40,
-			+60,	+20,
-			+60,	-20,
-			+70,	+00,
-			+70,	+45,
-			+70,	-35,
-			+85,	+20,
-			+85,	-20,
-			+95,	+00,
-			+110,	+15,
-			+110,	+40,
-			+110,	+65,
-			+110,	-20,
-			+120,	+00,
-			+130,	+20,
-			-5	,	+10,
-			-5	,	-10,
-			-10	,	+00,
-			-10	,	-20,
-			-15	,	+20,
-			-20	,	+10,
-			-20	,	-10,
-			-20	,	-40,
-			-25	,	+00,
-			-35	,	+15,
-			-35	,	+40,
-			-35	,	+65,
-			-35	,	-20,
-			-50	,	+00,
-			-50	,	-40,
-			-60	,	+20,
-			-60	,	-20,
-			-70	,	+00,
-			-70	,	+45,
-			-70	,	-35,
-			-85	,	+20,
-			-85	,	-20,
-			-95	,	+00,
-			-110	,	+15,
-			-110	,	+40,
-			-110	,	+65,
-			-110	,	-20,
-			-120	,	+00,
-			-130	,	+20,
-			};
+	private static int dataTable_[] = { 0, 0, +0, +00, +0, +20, +0, +45, +0,
+			+90, +0, -20, +0, -35, +5, +10, +5, -10, +10, +00, +10, -20, +15,
+			+20, +20, +10, +20, -10, +20, -40, +25, +00, +35, +15, +35, +40,
+			+35, +65, +35, -20, +50, +00, +50, -40, +60, +20, +60, -20, +70,
+			+00, +70, +45, +70, -35, +85, +20, +85, -20, +95, +00, +110, +15,
+			+110, +40, +110, +65, +110, -20, +120, +00, +130, +20, -5, +10, -5,
+			-10, -10, +00, -10, -20, -15, +20, -20, +10, -20, -10, -20, -40,
+			-25, +00, -35, +15, -35, +40, -35, +65, -35, -20, -50, +00, -50,
+			-40, -60, +20, -60, -20, -70, +00, -70, +45, -70, -35, -85, +20,
+			-85, -20, -95, +00, -110, +15, -110, +40, -110, +65, -110, -20,
+			-120, +00, -130, +20 };
 	
 	static public int PREDICT_WIDTH = 160;
 	static public int PREDICT_HEIGHT = 160;
@@ -108,6 +52,8 @@ public class FrameProcessor {
 	 * */
 	static public BusinessMode AnalyzeMode(long add, Rect faceRect) {
 		int mode = nativeAnalyzeMode(add, faceRect.x, faceRect.y , faceRect.width, faceRect.height);
+		//FOR TEST ONLY!
+		mode = 3;
 		switch (mode) {
 		case 1:
 			return BusinessMode.FRONTLIGHT;
@@ -128,13 +74,16 @@ public class FrameProcessor {
 		}
 	}
 
-	/* determine the best distance between subject and operator. */
+	/**
+	 * @return distance between the current location and the optimal location, 
+	 * 			which is how far you need to move
+	 */
 	static public float CalculateBestDistance(long add) {
 		float bestDistance = nativeCalculateBestDistance(add);
 		return bestDistance;
 	}
 	
-	/*
+	/**
 	 * @Warning faceBitmap must be a bitmap with PREDICT_WIDTH and PREDICT_HEIGHT
 	 * */
     static public double Predict(Bitmap faceBitmap){
@@ -181,20 +130,33 @@ public class FrameProcessor {
     	return res;
     }
 
-//	static public Rect DetectFace(long add) {
-//		Rect faceRect = instance_.nativeDetectFace(add);
-//		return faceRect;
-//	}
 
 	/* native function declaration: */
 	native public static String nativeSayHello();
 	native public static void nativeEnhanceImage(long add);
-	/*
+	
+	/**
 	 * @return 1=Front-lit; 2=Back-lit; 3=Night Scene; 0=others
 	 * */
 	native public static int nativeAnalyzeMode(long add, int left, int top, int right, int bottom);
+	
+	/**
+	 * @param add pointing to face map;
+	 * @return illumination map pointed by add.
+	 */
 	native public static boolean nativeGetIlluminationMap(long add);
+	
+	/**
+	 * @param add pointing to face map;
+	 * @return distance between the current location and the optimal location, 
+	 * 			which is how far you need to move
+	 */
 	native public static float nativeCalculateBestDistance(long add);
+	
+	/**
+	 * @param add
+	 * for use someday.
+	 */
 	native public static void nativeDetectFace(long add);
 	
 }
