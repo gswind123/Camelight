@@ -53,12 +53,15 @@ import com.camelight.android.view.util.CameraView;
 
 public class CameraActivity extends FragmentActivity {
 
+	public ConfirmModeFragment confirmModeFragment = null;
+	
 	private CameraView camera_;
 	private ImageView btnCapture_;
 	private ImageView preView_;
 	private ImageView btnGuide_;
 	private FrameLayout cameraLayout_;
 	private Interactor interactor_;
+
 	
 	private DetectModeCacheBean detectModeCacheBean_ = new DetectModeCacheBean();
 	private Handler businessHandler_ = new Handler(){
@@ -134,12 +137,14 @@ public class CameraActivity extends FragmentActivity {
         Handler handler = new Handler();
         interactor_ = new Interactor(handler);
         
+        confirmModeFragment = ConfirmModeFragment.createInstance(detectModeCacheBean_);
+        
         btnGuide_.setOnClickListener(onStartGuideListener);
         btnCapture_.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				confirmMode();
+				camera_.takePicture();
 			}
 		});
         
@@ -208,7 +213,7 @@ public class CameraActivity extends FragmentActivity {
     }
     
     public void confirmMode(){
-    	ConfirmModeFragment fragment = ConfirmModeFragment.createInstance(detectModeCacheBean_);
+    	ConfirmModeFragment fragment = confirmModeFragment;
     	FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
     	ft.add(android.R.id.content, fragment, ConfirmModeFragment.TAG);
     	ft.addToBackStack(ConfirmModeFragment.TAG);
