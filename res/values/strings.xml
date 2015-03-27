@@ -5,4 +5,13 @@
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
 
+    <string name="front_light_mode">顺光模式</string>
+    <string name="back_light_mode">逆光模式</string>
+    <string name="night_mode">夜景模式</string>
+    
+    <string name="mode_detected">自动检测到模式</string>
+    <string name="click_to_change_mode">点击切换模式</string>
+    <string name="or_text">或者</string>
+    <string name="confirm_this_mode">选用上面的模式</string>
+    
 </resources>

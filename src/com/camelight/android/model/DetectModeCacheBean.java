@@ -16,5 +16,5 @@ public class DetectModeCacheBean extends CacheBean {
 	public Face faces_[] = null;
 	public Rect selectedFace_ = new Rect();
 	public CameraFrame selectedFrame_ = null;
-	public BusinessMode mode_ = null;
+	public BusinessMode mode_ = BusinessMode.NULL;
 }

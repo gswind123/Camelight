@@ -14,8 +14,8 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
+import android.R.anim;
 import android.content.Context;
-import android.graphics.AvoidXfermode.Mode;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
@@ -61,7 +62,7 @@ public class CameraActivity extends FragmentActivity {
 	private FrameLayout cameraLayout_;
 	private Interactor interactor_;
 	
-	private DetectModeCacheBean detectModeCacheBean_;
+	private DetectModeCacheBean detectModeCacheBean_ = new DetectModeCacheBean();
 	private Handler businessHandler_ = new Handler(){
 		@Override
 		public void handleMessage(Message msg){
@@ -70,9 +71,9 @@ public class CameraActivity extends FragmentActivity {
 					String text = "人脸识别成功，模式:"+detectModeCacheBean_.mode_.description_;
 					Toast toast =  Toast.makeText(CameraActivity.this, text, Toast.LENGTH_SHORT);
 					toast.show();
-					//startGuide(detectModeCacheBean_.mode_);
-					startGuide(BusinessMode.FRONTLIGHT);
+					startGuide(detectModeCacheBean_.mode_);
 				}
+				getSupportFragmentManager();
 			}
 		}
 	};
@@ -140,7 +141,7 @@ public class CameraActivity extends FragmentActivity {
 			
 			@Override
 			public void onClick(View v) {
-				camera_.takePicture();
+				confirmMode();
 			}
 		});
         
@@ -174,12 +175,11 @@ public class CameraActivity extends FragmentActivity {
     }
     
     public void startDetectFace(){
-		DetectModeCacheBean bean = new DetectModeCacheBean();
+		DetectModeCacheBean bean = detectModeCacheBean_;
 		bean.camera_ = camera_;
 		bean.context_ = CameraActivity.this;
 		bean.layout_ = cameraLayout_;
 		interactor_.setParam(bean);
-		detectModeCacheBean_ = bean;
 		DetectModeInteraction detect_mode = new DetectModeInteraction();
 		interactor_.setInteraction(detect_mode);
 		interactor_.startInteract(100);
@@ -221,5 +221,13 @@ public class CameraActivity extends FragmentActivity {
     		break;
     	default: break;
     	}
+    }
+    
+    public void confirmMode(){
+    	ConfirmModeFragment fragment = ConfirmModeFragment.createInstance(detectModeCacheBean_);
+    	FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+    	ft.add(android.R.id.content, fragment, ConfirmModeFragment.TAG);
+    	ft.addToBackStack(ConfirmModeFragment.TAG);
+    	ft.commit();
     }
 }

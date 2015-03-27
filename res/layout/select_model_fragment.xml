@@ -1,0 +1,90 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_layout"
+    android:soundEffectsEnabled="false"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#00ffffff"
+    android:paddingLeft="50dp"
+    android:paddingRight="50dp"
+    android:paddingTop="80dp">
+	
+	<LinearLayout
+	    android:id="@+id/front_light_mode"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:gravity="center_vertical"
+	    android:padding="10dp"
+	    android:orientation="horizontal"
+	    android:background="@drawable/select_mode_item_selector">
+	    <ImageView 
+	        android:layout_width="40dp"
+	        android:layout_height="40dp"
+	        android:scaleType="centerCrop"
+	        android:src="@drawable/pic_front_light_mode"/>
+	    <TextView 
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:gravity="center"
+	        android:text="@string/front_light_mode"
+	        style="@style/text_18_000000"/>
+	</LinearLayout>
+	
+	<LinearLayout 
+	    android:layout_width="1px"
+	    android:layout_height="20dp"
+	    android:background="#00ffffff"/>
+	
+	<LinearLayout
+	    android:id="@+id/back_light_mode"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:padding="10dp"
+	    android:gravity="center_vertical"
+	    android:orientation="horizontal"
+	    android:background="@drawable/select_mode_item_selector">
+	    <ImageView 
+	        android:layout_width="40dp"
+	        android:layout_height="40dp"
+	        android:scaleType="centerCrop"
+	        android:adjustViewBounds="true"
+	        android:src="@drawable/pic_back_light_mode"/>
+	    <TextView 
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:gravity="center"
+	        android:text="@string/back_light_mode"
+	        style="@style/text_18_000000"/>
+	</LinearLayout>
+	
+	<LinearLayout 
+	    android:layout_width="1px"
+	    android:layout_height="20dp"
+	    android:background="#00ffffff"/>
+	
+	<LinearLayout
+	    android:id="@+id/night_mode"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:padding="10dp"
+	    android:gravity="center_vertical"
+	    android:orientation="horizontal"
+	    android:background="@drawable/select_mode_item_selector">
+	    <ImageView 
+	        android:layout_width="40dp"
+	        android:layout_height="40dp"
+	        android:scaleType="centerCrop"
+	        android:adjustViewBounds="true"
+	        android:src="@drawable/pic_night_mode"/>
+	    <TextView 
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:gravity="center"
+	        android:text="@string/night_mode"
+	        style="@style/text_18_000000"/>
+	</LinearLayout>
+	    
+</LinearLayout>
+
