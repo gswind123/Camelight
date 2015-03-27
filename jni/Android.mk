@@ -18,4 +18,3 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := libopencv_java.so
 LOCAL_MODULE    := opencv_java
 include $(PREBUILT_SHARED_LIBRARY)
-

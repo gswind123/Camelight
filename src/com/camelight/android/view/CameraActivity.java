@@ -6,8 +6,12 @@ import java.io.InputStream;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.OpenCVLoader;
-
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Bitmap.Config;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,7 +21,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.Interpolator;
+import android.view.animation.TranslateAnimation;
+import android.view.animation.Animation.AnimationListener;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -37,12 +48,24 @@ import com.camelight.android.view.util.CameraView;
 
 public class CameraActivity extends FragmentActivity {
 
+	public ConfirmModeFragment confirmModeFragment = null;
+	
 	private CameraView camera_;
 	private ImageView btnCapture_;
 	private ImageView preView_;
 	private ImageView btnGuide_;
 	private FrameLayout cameraLayout_;
 	private Interactor interactor_;
+
+	ImageView testImage_ = null;
+	ViewGroup rootView_ = null;
+	
+	private Runnable onConfirmModeFinish_ = new Runnable() {
+		@Override
+		public void run() {
+			startGuide(detectModeCacheBean_.mode_);
+		}
+	};
 	
 	private DetectModeCacheBean detectModeCacheBean_ = new DetectModeCacheBean();
 	private Handler businessHandler_ = new Handler(){
@@ -50,10 +73,7 @@ public class CameraActivity extends FragmentActivity {
 		public void handleMessage(Message msg){
 			if(msg.what == BusinessState.DETECT_FACE_FINISH) {
 				if(detectModeCacheBean_.faces_ != null) {
-					String text = "人脸识别成功，模式:"+detectModeCacheBean_.mode_.description_;
-					Toast toast =  Toast.makeText(CameraActivity.this, text, Toast.LENGTH_SHORT);
-					toast.show();
-					startGuide(detectModeCacheBean_.mode_);
+					confirmMode();
 				}
 				getSupportFragmentManager();
 			}
@@ -118,15 +138,62 @@ public class CameraActivity extends FragmentActivity {
         Handler handler = new Handler();
         interactor_ = new Interactor(handler);
         
+        confirmModeFragment = ConfirmModeFragment.createInstance(detectModeCacheBean_);
+        confirmModeFragment.setOnFinish(onConfirmModeFinish_);
+        
         btnGuide_.setOnClickListener(onStartGuideListener);
         btnCapture_.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				confirmMode();
+				//camera_.takePicture();
+				testAnimation();
 			}
 		});
         
+    }
+    
+    private void testAnimation() {
+    	Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic_back_light_mode);
+    	BitmapDrawable drawable = new BitmapDrawable(getResources(),bitmap);
+    	ImageView image_view = new ImageView(this);
+    	image_view.setBackgroundDrawable(drawable);
+    	testImage_ = image_view;
+    	rootView_ = (ViewGroup)findViewById(android.R.id.content);
+    	int location[] = new int[2];
+    	btnCapture_.getLocationInWindow(location);
+    	if(rootView_ != null) {
+    		rootView_.addView(testImage_, 50, 50);
+    		Animation anim = new TranslateAnimation(
+    				Animation.ABSOLUTE, location[0],
+    				Animation.ABSOLUTE, location[0],
+    				Animation.ABSOLUTE, location[1],
+    				Animation.ABSOLUTE, location[1]-100);
+    		anim.setDuration(2000);
+    		anim.setInterpolator(new AccelerateDecelerateInterpolator());
+    		anim.setAnimationListener(new AnimationListener() {
+				
+				@Override
+				public void onAnimationStart(Animation animation) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void onAnimationRepeat(Animation animation) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					rootView_.removeView(testImage_);
+				}
+			});
+    		anim.setZAdjustment(Animation.ZORDER_TOP);
+    		testImage_.startAnimation(anim);
+    	}
+    	
     }
 
     @Override
@@ -206,7 +273,7 @@ public class CameraActivity extends FragmentActivity {
     }
     
     public void confirmMode(){
-    	ConfirmModeFragment fragment = ConfirmModeFragment.createInstance(detectModeCacheBean_);
+    	ConfirmModeFragment fragment = confirmModeFragment;
     	FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
     	ft.add(android.R.id.content, fragment, ConfirmModeFragment.TAG);
     	ft.addToBackStack(ConfirmModeFragment.TAG);
