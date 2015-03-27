@@ -24,7 +24,17 @@ public class ConfirmModeFragment extends Fragment implements OnClickListener{
 	private ImageView modeImage_ = null;
 	private TextView modeText_ = null;
 	private View confirmLayout_ = null;
+	private Runnable onFinish_ = null;
 	
+	private Runnable onSelectModeFinish_ = new Runnable(){
+		@Override
+		public void run() {
+			setModeLayoutByCacheBean();
+			mainView_.setVisibility(View.VISIBLE);
+		}
+	};
+			
+			
 	static public ConfirmModeFragment createInstance(CacheBean detectModeCacheBean){
 		if(detectModeCacheBean != null && detectModeCacheBean instanceof DetectModeCacheBean) {
 			ConfirmModeFragment fragment = new ConfirmModeFragment();
@@ -60,16 +70,30 @@ public class ConfirmModeFragment extends Fragment implements OnClickListener{
 		}
 	}
 	
+	@Override 
+	public void onDestroy() {
+		if(onFinish_ != null) {
+			onFinish_.run();	
+		}
+		super.onDestroy();
+	}
+	
+	public void setOnFinish(Runnable finish) {
+		onFinish_ = finish;
+	}
+	
 	private void quit(){
 		getActivity().onBackPressed();
 	}
 	
 	private void selectMode(){
 		SelectModeFragment fragment = SelectModeFragment.createInstance(cacheBean_);
+		fragment.setOnFinish(this.onSelectModeFinish_);
 		FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
 		ft.add(android.R.id.content, fragment, SelectModeFragment.TAG);
 		ft.addToBackStack(SelectModeFragment.TAG);
 		ft.commit();
+		mainView_.setVisibility(View.GONE);
 	}
 	
 	private void setModeLayoutByCacheBean(){

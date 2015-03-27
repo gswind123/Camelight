@@ -62,8 +62,8 @@ public class DetectDegreeInteraction extends Interaction{
 			Bitmap face_bm = Bitmap.createBitmap(fixed_mat.cols(), fixed_mat.rows(), Config.RGB_565);
 			Utils.matToBitmap(fixed_mat, face_bm);
 			int index = (int)FrameProcessor.Predict(face_bm);
-			int angle[] = FrameProcessor.getPredictData(index);
-			bean.setDegree(new PointF(angle[0], angle[1]));
+			double angle[] = FrameProcessor.getPredictData(index);
+			bean.setDegree(new PointF((float)angle[0], (float)angle[1]));
 		} else {
 			bean.setDegree(null);
 		}

@@ -86,8 +86,8 @@ public class FrontLightGuideInteraction extends Interaction{
 		@Override
 		public boolean update(long tweenMillsec) {
 			if(degree_ != null) {
-				dstWidthDip_ = 25+Math.abs(degree_.x);
-				int direction = (degree_.x<0)?LEFT:RIGHT;
+				dstWidthDip_ = 25+Math.abs(degree_.y);
+				int direction = (degree_.y<0)?LEFT:RIGHT;
 				View arrow = getArrowView();
 				ViewGroup.LayoutParams param = arrow.getLayoutParams();
 				if(param == null) {

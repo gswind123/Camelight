@@ -20,6 +20,7 @@ public class SelectModeFragment extends Fragment implements OnClickListener{
 	private View frontLightView_ = null;
 	private View backLightView_ = null;
 	private View nightView_ = null;
+	private Runnable onFinish_ = null;
 	
 	static public SelectModeFragment createInstance(CacheBean detectModeCacheBean) {
 		if(detectModeCacheBean != null && detectModeCacheBean instanceof DetectModeCacheBean) {
@@ -43,6 +44,18 @@ public class SelectModeFragment extends Fragment implements OnClickListener{
 		mainView_.setOnClickListener(this);
 		updateModeView();
 		return mainView_;
+	}
+	
+	@Override
+	public void onDestroy() {
+		if(onFinish_ != null) {
+			onFinish_.run();
+		}
+		super.onDestroy();
+	}
+	
+	public void setOnFinish(Runnable finish) {
+		onFinish_ = finish;
 	}
 	
 	private void updateModeView(){
