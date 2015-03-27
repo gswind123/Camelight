@@ -6,22 +6,8 @@ import java.io.InputStream;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.CascadeClassifier;
 
-import android.R.anim;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.PointF;
-import android.graphics.Bitmap.Config;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -34,7 +20,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import com.camelight.android.R;
@@ -42,15 +27,12 @@ import com.camelight.android.business.BusinessMode;
 import com.camelight.android.business.BusinessState;
 import com.camelight.android.business.DetectModeInteraction;
 import com.camelight.android.business.FrontLightGuideInteraction;
-import com.camelight.android.business.Interaction;
 import com.camelight.android.business.Interactor;
 import com.camelight.android.business.NightSceneGuideInteraction;
 import com.camelight.android.model.CalculateDistanceCacheBean;
-import com.camelight.android.model.CameraFrame;
 import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
 import com.camelight.android.util.FrameProcessor;
-import com.camelight.android.util.ImageProcessor;
 import com.camelight.android.view.util.CameraView;
 
 public class CameraActivity extends FragmentActivity {
