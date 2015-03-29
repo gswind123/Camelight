@@ -68,7 +68,7 @@ public class DetectModeInteraction extends Interaction {
 			cache_bean.mode_ = FrameProcessor.AnalyzeMode(rgba.nativeObj, face_rect);
 			//yw_sun debug
 			((CameraActivity)(cacheBean_.context_)).updatePreview(Bitmap.createBitmap(bm,
-					android_rect.left, android_rect.top, android_rect.right, android_rect.bottom));
+					android_rect.left, android_rect.top, android_rect.width(), android_rect.height()));
 			//--------------
 			return InteractState.STOP;
 		}

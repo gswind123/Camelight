@@ -63,7 +63,7 @@ public class NightSceneGuideInteraction extends Interaction{
 				Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
 				bm = ImageProcessor.rotate(bm, 90);
 				((CameraActivity)(cacheBean_.context_)).updatePreview(Bitmap.createBitmap(bm,
-						facerRect.left, facerRect.top, facerRect.right, facerRect.bottom));
+						facerRect.left, facerRect.top, facerRect.width(), facerRect.height()));
 				//--------------
 				//currentRadius = targetRadius + distance * A, where distance ->[0,2.5]
 				//可以通過調節A來改變currentRadius的變化快慢。我也不是道怎麼突然變成繁體字了..
