@@ -52,12 +52,11 @@ public class DetectDegreeInteraction extends Interaction{
 		if(faces != null) {
 			/*TODO:添加优化的人脸选择*/
 			Face face = faces[0];
-			Rect rect = detector.getFaceRect(face);
+			org.opencv.core.Rect rect = detector.getFaceLowRect(face);
 			Mat rgba = ImageProcessor.bitmap2Mat(bm);
-			org.opencv.core.Rect cv_rect = new org.opencv.core.Rect(rect.left, rect.top, rect.width(), rect.height());
-			Mat face_mat = new Mat(rgba, cv_rect);
+			Mat face_low_mat = new Mat(rgba, rect);
 			Mat fixed_mat = new Mat(FrameProcessor.PREDICT_HEIGHT, FrameProcessor.PREDICT_WIDTH, CvType.CV_8UC4);
-			Imgproc.resize(face_mat, fixed_mat, fixed_mat.size());
+			Imgproc.resize(face_low_mat, fixed_mat, fixed_mat.size());
 			FrameProcessor.GetIlluminationMap(fixed_mat.nativeObj);
 			Bitmap face_bm = Bitmap.createBitmap(fixed_mat.cols(), fixed_mat.rows(), Config.RGB_565);
 			Utils.matToBitmap(fixed_mat, face_bm);

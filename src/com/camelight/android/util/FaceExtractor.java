@@ -2,6 +2,8 @@ package com.camelight.android.util;
 
 import java.util.ArrayList;
 
+import org.opencv.core.Core;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -24,6 +26,7 @@ public class FaceExtractor {
 	private int 	maxFaces = 20;
 	private Bitmap 	src_ = null;
 	private FaceDetector.Face[] faces_ = null;
+	private org.opencv.core.Rect faceRect = null;
 	
 	public FaceExtractor(Bitmap src) {
 		super();
@@ -86,18 +89,33 @@ public class FaceExtractor {
          }
 	}
 	
-	//只能得到face[0]的Rect
-	public Rect getFaceRect() {
+	
+	public org.opencv.core.Rect getFaceRect(Face f) {
 		if (faces_.length == 0) {
 			return null;
 		}
 		PointF midPoint = new PointF();//人脸中心点
-		
-		Face f = faces_[0];
-		float dis = f.eyesDistance();
+		float a = f.eyesDistance()/2;
 		f.getMidPoint(midPoint);
-		int dd = (int) (dis);
-		Rect faceRect = new Rect((int) (midPoint.x - dd),(int) (midPoint.y - dd), (int) (midPoint.x + dd),(int) (midPoint.y + dd));
+		faceRect.x = Math.max(0, (int) (midPoint.x - 2.5*a));
+		faceRect.y = Math.max(0, (int) (midPoint.y - 2.5*a));
+		faceRect.width = Math.min((int) (5*a), src_.getWidth()-faceRect.x);
+		faceRect.height = Math.min((int) (6*a), src_.getHeight()-faceRect.y);
+		
+		return faceRect;
+	}
+	
+	public org.opencv.core.Rect getFaceLowRect(Face f){
+		if (faces_.length == 0) {
+			return null;
+		}
+		PointF midPoint = new PointF();//人脸中心点
+		float a = f.eyesDistance()/2;
+		f.getMidPoint(midPoint);
+		faceRect.x = Math.max(0, (int) (midPoint.x - 2.5*a));
+		faceRect.y = Math.max(0, (int) (midPoint.y + 0.5*a));
+		faceRect.width = Math.min((int) (5*a), src_.getWidth()-faceRect.x);
+		faceRect.height = Math.min((int) (3*a), src_.getHeight()-faceRect.y);
 		
 		return faceRect;
 	}
@@ -109,18 +127,18 @@ public class FaceExtractor {
 	 * @ param: a face in the src_ bitmap
 	 * @ return:a validate rect of the face
 	 * */
-	public Rect getFaceRect(Face f){
-		PointF midPoint = new PointF();
-		float dis = f.eyesDistance();
-		f.getMidPoint(midPoint);
-		int dd = (int) (dis);
-		int left = Math.max(0, (int)(midPoint.x - dd));
-		int right = Math.min(this.src_.getWidth(), (int)(midPoint.x + dd));
-		int top = Math.max(0, (int)(midPoint.y - dd));
-		int bottom = Math.min(this.src_.getWidth(), (int)(midPoint.y + dd));
-		Rect faceRect = new Rect(left,top,right,bottom);
-		return faceRect;
-	}
+//	public Rect getFaceRect(Face f){
+//		PointF midPoint = new PointF();
+//		float dis = f.eyesDistance();
+//		f.getMidPoint(midPoint);
+//		int dd = (int) (dis);
+//		int left = Math.max(0, (int)(midPoint.x - dd));
+//		int right = Math.min(this.src_.getWidth(), (int)(midPoint.x + dd));
+//		int top = Math.max(0, (int)(midPoint.y - dd));
+//		int bottom = Math.min(this.src_.getWidth(), (int)(midPoint.y + dd));
+//		Rect faceRect = new Rect(left,top,right,bottom);
+//		return faceRect;
+//	}
 	
 	public Face[] getFaces(){
 		return faces_;

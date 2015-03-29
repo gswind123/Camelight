@@ -47,10 +47,10 @@ public class CalculateDistanceInteraction extends Interaction{
 		if(faces != null) {
 			/*TODO:添加优化的人脸选择*/
 			Face face = faces[0];
-			Rect rect = detector.getFaceRect(face);
+			org.opencv.core.Rect cv_rect = detector.getFaceRect(face);
+			Rect rect = new Rect(cv_rect.x, cv_rect.y, cv_rect.x+cv_rect.width, cv_rect.y+cv_rect.height);
 			bean.setFaceRect(rect);
 			Mat rgba = ImageProcessor.bitmap2Mat(bm);
-			org.opencv.core.Rect cv_rect = new org.opencv.core.Rect(rect.left, rect.top, rect.width(), rect.height());
 			Mat face_mat = new Mat(rgba, cv_rect);
 			distance = FrameProcessor.CalculateBestDistance(face_mat.nativeObj);
 			bean.setDistance(distance);
