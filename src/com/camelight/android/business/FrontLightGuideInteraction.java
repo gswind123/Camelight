@@ -86,9 +86,12 @@ public class FrontLightGuideInteraction extends Interaction{
 		 * */
 		@Override
 		public boolean update(long tweenMillsec) {
-			if(degree_ != null) {
-				dstWidthDip_ = 25+Math.abs(degree_.y);
-				int direction = (degree_.y<0)?LEFT:RIGHT;
+			if(degree_ != null || true) {
+				if(degree_ == null) {
+					degree_ = new PointF(-360.f, -360.f);
+				}
+				dstWidthDip_ = 25+Math.abs(degree_.x);
+				int direction = (degree_.x<0)?LEFT:RIGHT;
 				View arrow = getArrowView();
 				ViewGroup.LayoutParams param = arrow.getLayoutParams();
 				if(param == null) {
@@ -134,7 +137,6 @@ public class FrontLightGuideInteraction extends Interaction{
 				/** finally set a new width to the arrow*/
 				param.width = (int)cur_width;
 				arrow.setLayoutParams(param);
-				
 				String text = degree_.x+","+degree_.y;
 				degreeText_.setText(text);
 			}
@@ -224,6 +226,8 @@ public class FrontLightGuideInteraction extends Interaction{
 			@Override
 			public void handleMessage(Message msg) {
 				degree_ = cacheBean_.getDegree();
+				//yw_sun debug
+				((CameraActivity)(cacheBean_.context_)).updatePreview(cacheBean_.bitmap_);
 			}
 		};
 

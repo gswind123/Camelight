@@ -168,7 +168,7 @@ public class CameraView extends SurfaceView
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		viewWidth_ = width;
 		viewHeight_ = height;
-		initCamera(CAMERA_FACE_BACK ,width, height);
+		initCamera(CAMERA_FACE_FRONT ,width, height);
 	}
 	
 	
@@ -191,7 +191,8 @@ public class CameraView extends SurfaceView
         String fileName = pathName + currentDateandTime + ".jpg";
        
         //rotate the image and rite the image in a file (in jpeg format)
-        data = ImageProcessor.rotateJPEGData(data, 90);
+        int rotation = this.latestFrame_.getRotation();
+        data = ImageProcessor.rotateJPEGData(data, rotation);
         try {
             FileOutputStream fos = new FileOutputStream(fileName);
 
@@ -207,7 +208,13 @@ public class CameraView extends SurfaceView
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
 		Size size = camera.getParameters().getPreviewSize();
-		CameraFrame cur_frame = new CameraFrame(data, size.width, size.height);
+		int rotation = 0;
+		if(cameraFacing_ == CAMERA_FACE_FRONT) {
+			rotation = -90;
+		} else if(cameraFacing_ == CAMERA_FACE_BACK) {
+			rotation = 90;
+		}
+		CameraFrame cur_frame = new CameraFrame(data, size.width, size.height, rotation);
 		synchronized (this) {
 			latestFrame_ = cur_frame;
 		}

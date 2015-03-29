@@ -45,25 +45,25 @@ public class DetectDegreeInteraction extends Interaction{
 		CameraFrame frame = bean.camera_.getLatestFrame();
 		byte[] jpeg_data = frame.getJPEGData();
 		Bitmap bm = BitmapFactory.decodeByteArray(jpeg_data, 0, jpeg_data.length);
-		bm = ImageProcessor.rotate(bm, 90);
+		bm = ImageProcessor.rotate(bm, frame.getRotation());
 		FaceExtractor detector = new FaceExtractor(bm);
 		detector.detectFaces();
 		Face faces[] = detector.getFaces();
 		if(faces != null) {
 			/*TODO:添加优化的人脸选择*/
 			Face face = faces[0];
-			Rect rect = detector.getFaceRect(face);
+			org.opencv.core.Rect rect = detector.getFaceLowRect(face);
 			Mat rgba = ImageProcessor.bitmap2Mat(bm);
-			org.opencv.core.Rect cv_rect = new org.opencv.core.Rect(rect.left, rect.top, rect.width(), rect.height());
-			Mat face_mat = new Mat(rgba, cv_rect);
+			Mat face_low_mat = new Mat(rgba, rect);
 			Mat fixed_mat = new Mat(FrameProcessor.PREDICT_HEIGHT, FrameProcessor.PREDICT_WIDTH, CvType.CV_8UC4);
-			Imgproc.resize(face_mat, fixed_mat, fixed_mat.size());
+			Imgproc.resize(face_low_mat, fixed_mat, fixed_mat.size());
 			FrameProcessor.GetIlluminationMap(fixed_mat.nativeObj);
 			Bitmap face_bm = Bitmap.createBitmap(fixed_mat.cols(), fixed_mat.rows(), Config.RGB_565);
 			Utils.matToBitmap(fixed_mat, face_bm);
 			int index = (int)FrameProcessor.Predict(face_bm);
-			double angle[] = FrameProcessor.getPredictData(index);
-			bean.setDegree(new PointF((float)angle[0], (float)angle[1]));
+			int angle[] = FrameProcessor.getPredictData(index);
+			bean.setDegree(new PointF(angle[0], angle[1]));
+			bean.bitmap_ = Bitmap.createBitmap(bm, rect.x, rect.y, rect.width, rect.height);
 		} else {
 			bean.setDegree(null);
 		}

@@ -18,13 +18,15 @@ public class CameraFrame {
 	private Mat yuvFrameMat_ = null;
 	private int width_ = 0;
 	private int height_ = 0;
+	private int rotation_ = 0;//The rotation of raw image
 	
-	public CameraFrame(byte[] raw_byte, int w, int h) {
+	public CameraFrame(byte[] raw_byte, int w, int h, int rotation) {
 		rawData_ = raw_byte;
 		yuvFrameMat_ = new Mat(h+h/2, w, CvType.CV_8UC1);
 		yuvFrameMat_.put(0, 0, rawData_);
 		width_ = w;
 		height_ = h;
+		rotation_ = rotation;
 	}
 	public byte[] getRawData(){
 		return rawData_;
@@ -43,6 +45,9 @@ public class CameraFrame {
 	}
 	public int getHeight(){
 		return height_;
+	}
+	public int getRotation(){
+		return rotation_;
 	}
     public Mat gray() {
     	return yuvFrameMat_.submat(0, height_, 0, width_);

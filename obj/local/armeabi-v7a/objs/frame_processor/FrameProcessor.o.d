@@ -37,7 +37,8 @@ obj/local/armeabi-v7a/objs/frame_processor/FrameProcessor.o: \
  E:/ENTERTAINMENT/tools/adt/android-ndk-r9d-windows-x86_64/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/deque \
  E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui.hpp \
  E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui_c.h \
- E:/ENTERTAINMENT/tools/adt/android-ndk-r9d-windows-x86_64/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/android/log.h
+ E:/ENTERTAINMENT/tools/adt/android-ndk-r9d-windows-x86_64/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/android/log.h \
+ E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/contrib/detection_based_tracker.hpp
 
 E:/ENTERTAINMENT/tools/adt/android-ndk-r9d-windows-x86_64/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/jni.h:
 
@@ -114,3 +115,5 @@ E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/
 E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui_c.h:
 
 E:/ENTERTAINMENT/tools/adt/android-ndk-r9d-windows-x86_64/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/android/log.h:
+
+E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/contrib/detection_based_tracker.hpp:

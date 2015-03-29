@@ -54,7 +54,7 @@ public class DetectModeInteraction extends Interaction {
 		CameraFrame cur_frame = camera.getLatestFrame();
 		byte[] data = cur_frame.getJPEGData();
 		Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
-		bm = ImageProcessor.rotate(bm, 90);
+		bm = ImageProcessor.rotate(bm, cur_frame.getRotation());
 		FaceExtractor detector = new FaceExtractor(bm);
 		detector.detectFaces();
 		Face faces[] = detector.getFaces();
@@ -62,13 +62,11 @@ public class DetectModeInteraction extends Interaction {
 			cache_bean.faces_ = faces;
 			cache_bean.selectedFrame_ = cur_frame;
 			Mat rgba = ImageProcessor.bitmap2Mat(bm);
-			Rect android_rect = detector.getFaceRect(faces[0]);
-			org.opencv.core.Rect face_rect = new org.opencv.core.Rect(
-					android_rect.left,android_rect.top,android_rect.width(),android_rect.height());
-			cache_bean.mode_ = FrameProcessor.AnalyzeMode(rgba.nativeObj, face_rect);
+			org.opencv.core.Rect cv_rect = detector.getFaceRect(faces[0]);
+			cache_bean.mode_ = FrameProcessor.AnalyzeMode(rgba.nativeObj, cv_rect);
 			//yw_sun debug
 			((CameraActivity)(cacheBean_.context_)).updatePreview(Bitmap.createBitmap(bm,
-					android_rect.left, android_rect.top, android_rect.width(), android_rect.height()));
+					cv_rect.x, cv_rect.y, cv_rect.width, cv_rect.height));
 			//--------------
 			return InteractState.STOP;
 		}

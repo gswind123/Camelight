@@ -1,3 +1,4 @@
+
 package com.camelight.android.view;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -6,11 +7,9 @@ import java.io.InputStream;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.OpenCVLoader;
+
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Bitmap.Config;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,17 +20,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.MeasureSpec;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.Interpolator;
-import android.view.animation.TranslateAnimation;
-import android.view.animation.Animation.AnimationListener;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.camelight.android.R;
 import com.camelight.android.business.BusinessMode;
@@ -40,7 +32,6 @@ import com.camelight.android.business.DetectModeInteraction;
 import com.camelight.android.business.FrontLightGuideInteraction;
 import com.camelight.android.business.Interactor;
 import com.camelight.android.business.NightSceneGuideInteraction;
-import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CalculateDistanceCacheBean;
 import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
@@ -148,9 +139,9 @@ public class CameraActivity extends FragmentActivity {
 			
 			@Override
 			public void onClick(View v) {
-				//camera_.takePicture();
-				detectModeCacheBean_.mode_ = BusinessMode.FRONTLIGHT;
-				confirmMode();
+				camera_.takePicture();
+//				detectModeCacheBean_.mode_ = BusinessMode.FRONTLIGHT;
+//				confirmMode();
 			}
 		});
         

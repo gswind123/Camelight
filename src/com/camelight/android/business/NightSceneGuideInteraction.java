@@ -61,13 +61,9 @@ public class NightSceneGuideInteraction extends Interaction{
 				CameraFrame frame = cacheBean_.camera_.getLatestFrame();
 				byte data[] = frame.getJPEGData();
 				Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
-				bm = ImageProcessor.rotate(bm, 90);
+				bm = ImageProcessor.rotate(bm, frame.getRotation());
 				((CameraActivity)(cacheBean_.context_)).updatePreview(Bitmap.createBitmap(bm,
 						facerRect.left, facerRect.top, facerRect.width(), facerRect.height()));
-				//--------------
-				//currentRadius = targetRadius + distance * A, where distance ->[0,2.5]
-				//可以通過調節A來改變currentRadius的變化快慢。我也不是道怎麼突然變成繁體字了..
-				//這裡應該需要轉換為像素操作。
 				float A = 50;
 				currentCircleRadius = targetCircleRadius + distance_ * A;
 				//定位圆心
