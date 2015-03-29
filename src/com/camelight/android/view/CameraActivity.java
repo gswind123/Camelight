@@ -136,6 +136,7 @@ public class CameraActivity extends FragmentActivity {
         btnCapture_ = (ImageView) findViewById(R.id.btn_take_photo);
         btnGuide_ = (ImageView) findViewById(R.id.btn_start_guide);
         cameraLayout_ = (FrameLayout) findViewById(R.id.camera_frame);
+        preView_ = (ImageView)findViewById(R.id.img_preview);
         Handler handler = new Handler();
         interactor_ = new Interactor(handler);
         
@@ -238,5 +239,11 @@ public class CameraActivity extends FragmentActivity {
     	ft.addToBackStack(ConfirmModeFragment.TAG);
     	ft.setCustomAnimations(FragmentTransaction.TRANSIT_FRAGMENT_FADE, FragmentTransaction.TRANSIT_FRAGMENT_FADE);
     	ft.commit();
+    }
+    
+    public void updatePreview(Bitmap bitmap) {
+    	Bitmap bmp = Bitmap.createBitmap(bitmap);
+    	BitmapDrawable drawable = new BitmapDrawable(bmp);
+    	preView_.setBackgroundDrawable(drawable);
     }
 }

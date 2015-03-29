@@ -60,10 +60,9 @@
 	        android:gravity="center_horizontal">
 	        
 		    <ImageView
-		        android:id="@+id/btn_setttings"
-		        android:layout_width="57dp"
-		        android:layout_height="37dp"
-		        android:background="@drawable/btn_start_guide_selector"/>
+		        android:id="@+id/img_preview"
+		        android:layout_width="60dp"
+		        android:layout_height="60dp"/>
 	    </LinearLayout>
 	    
 	</LinearLayout>
