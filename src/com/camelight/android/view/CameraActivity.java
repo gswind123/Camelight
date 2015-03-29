@@ -40,6 +40,7 @@ import com.camelight.android.business.DetectModeInteraction;
 import com.camelight.android.business.FrontLightGuideInteraction;
 import com.camelight.android.business.Interactor;
 import com.camelight.android.business.NightSceneGuideInteraction;
+import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CalculateDistanceCacheBean;
 import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
@@ -147,53 +148,11 @@ public class CameraActivity extends FragmentActivity {
 			@Override
 			public void onClick(View v) {
 				//camera_.takePicture();
-				testAnimation();
+				detectModeCacheBean_.mode_ = BusinessMode.FRONTLIGHT;
+				confirmMode();
 			}
 		});
         
-    }
-    
-    private void testAnimation() {
-    	Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic_back_light_mode);
-    	BitmapDrawable drawable = new BitmapDrawable(getResources(),bitmap);
-    	ImageView image_view = new ImageView(this);
-    	image_view.setBackgroundDrawable(drawable);
-    	testImage_ = image_view;
-    	rootView_ = (ViewGroup)findViewById(android.R.id.content);
-    	int location[] = new int[2];
-    	btnCapture_.getLocationInWindow(location);
-    	if(rootView_ != null) {
-    		rootView_.addView(testImage_, 50, 50);
-    		Animation anim = new TranslateAnimation(
-    				Animation.ABSOLUTE, location[0],
-    				Animation.ABSOLUTE, location[0],
-    				Animation.ABSOLUTE, location[1],
-    				Animation.ABSOLUTE, location[1]-100);
-    		anim.setDuration(2000);
-    		anim.setInterpolator(new AccelerateDecelerateInterpolator());
-    		anim.setAnimationListener(new AnimationListener() {
-				
-				@Override
-				public void onAnimationStart(Animation animation) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void onAnimationEnd(Animation animation) {
-					rootView_.removeView(testImage_);
-				}
-			});
-    		anim.setZAdjustment(Animation.ZORDER_TOP);
-    		testImage_.startAnimation(anim);
-    	}
-    	
     }
 
     @Override
@@ -277,6 +236,7 @@ public class CameraActivity extends FragmentActivity {
     	FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
     	ft.add(android.R.id.content, fragment, ConfirmModeFragment.TAG);
     	ft.addToBackStack(ConfirmModeFragment.TAG);
+    	ft.setCustomAnimations(FragmentTransaction.TRANSIT_FRAGMENT_FADE, FragmentTransaction.TRANSIT_FRAGMENT_FADE);
     	ft.commit();
     }
 }

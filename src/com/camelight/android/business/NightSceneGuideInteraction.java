@@ -9,6 +9,7 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
@@ -26,8 +27,6 @@ public class NightSceneGuideInteraction extends Interaction{
 	private Handler msgHandler_ = null;
 	private PropertyAnimator animator_ = new PropertyAnimator();
 	private PropertyAnimation distanceAnimation_ = new PropertyAnimation() {
-		private final int LEFT = 1;
-		private final int RIGHT=2;
 		private final float SPEED = 0.008f/** pixels per millsec */;
 
 		private View distanceView_ = null;
@@ -43,24 +42,29 @@ public class NightSceneGuideInteraction extends Interaction{
 		 * */
 		@Override
 		public boolean update(long tweenMillsec) {
-			if (distance_ != 0) {
-				ViewGroup.LayoutParams params = circleView_.getLayoutParams();
+			if (distance_ != 0 && !Float.isNaN(distance_)) {
+				FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)circleView_.getLayoutParams();
 				if (params == null) {
 					return false;
 				}
 				facerRect = cacheBean_.getFaceRect();
-				float temp = (facerRect.left+facerRect.right)/2;
+				circleCenter = new PointF();
 				//note that faceRect.width = faceRect.height
-				circleCenter = new PointF(temp, temp);
+				circleCenter.x = (facerRect.left + facerRect.right)/2;
+				circleCenter.y = (facerRect.top + facerRect.bottom)/2;
 				targetCircleRadius = circleCenter.x - facerRect.left;
 				
 				//currentRadius = targetRadius + distance * A, where distance ->[0,2.5]
 				//可以通過調節A來改變currentRadius的變化快慢。我也不是道怎麼突然變成繁體字了..
 				//這裡應該需要轉換為像素操作。
-				float A = 100;
+				float A = 50;
 				currentCircleRadius = targetCircleRadius + distance_ * A;
-				params.width = (int)currentCircleRadius;
-				params.height = (int)currentCircleRadius;
+				//定位圆心
+				int left = (int)(circleCenter.x - currentCircleRadius);
+				int top = (int)(circleCenter.y - currentCircleRadius);
+				params.width = (int)currentCircleRadius*2;
+				params.height = (int)currentCircleRadius*2;
+				params.setMargins(left, top, 0, 0);
 				circleView_.setLayoutParams(params);
 			}
 			return true;
@@ -74,9 +78,7 @@ public class NightSceneGuideInteraction extends Interaction{
 			circleView_ = distanceView_.findViewById(R.id.circle_view);
 
 			/** add the view to the outer frame layout*/
-			int wrap_content = ViewGroup.LayoutParams.WRAP_CONTENT;
-			ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(wrap_content, wrap_content);
-			cacheBean_.layout_.addView(distanceView_, lp);
+			cacheBean_.layout_.addView(distanceView_);
 			return true;
 		}
 		
