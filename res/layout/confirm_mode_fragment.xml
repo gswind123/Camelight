@@ -10,6 +10,12 @@
     android:paddingTop="80dp"
     android:paddingLeft="50dp"
     android:paddingRight="50dp">
+    <LinearLayout
+        android:id="@+id/content_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        
 	    <TextView
 	        android:id="@+id/mode_detected_text"
 	        android:layout_width="match_parent"
@@ -37,14 +43,12 @@
 		        android:id="@+id/detected_mode_image"
 		        android:layout_width="40dp"
 		        android:layout_height="40dp"
-		        android:scaleType="centerCrop"
-		        android:src="@drawable/pic_front_light_mode"/>
+		        android:scaleType="centerCrop" />
 		    <TextView 
 		        android:id="@+id/detected_mode_text"
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
 		        android:gravity="center"
-		        android:text="@string/front_light_mode"
 		        style="@style/text_18_000000"/>
 		</LinearLayout>
 		<TextView
@@ -72,5 +76,5 @@
 		        android:text="@string/confirm_this_mode"
 		        style="@style/text_18_000000"/>
 		</LinearLayout>
-	    
+	</LinearLayout>
 </LinearLayout>
