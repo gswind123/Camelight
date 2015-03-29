@@ -52,8 +52,6 @@ public class FrameProcessor {
 	 * */
 	static public BusinessMode AnalyzeMode(long add, Rect faceRect) {
 		int mode = nativeAnalyzeMode(add, faceRect.x, faceRect.y , faceRect.width, faceRect.height);
-		//FOR TEST ONLY!
-		mode = 3;
 		switch (mode) {
 		case 1:
 			return BusinessMode.FRONTLIGHT;
@@ -152,11 +150,5 @@ public class FrameProcessor {
 	 * 			which is how far you need to move
 	 */
 	native public static float nativeCalculateBestDistance(long add);
-	
-	/**
-	 * @param add
-	 * for use someday.
-	 */
-	native public static void nativeDetectFace(long add);
 	
 }

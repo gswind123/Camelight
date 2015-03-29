@@ -4,9 +4,11 @@
 #include "FrameTools.h"
 #include <vector>
 #include <android/log.h>
-
+#include <opencv2/contrib/detection_based_tracker.hpp>
 using namespace std;
 using namespace cv;
+#define  LOG_TAG    "FrameProcessor"
+#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 
 #ifdef __cplusplus
 extern "C" {
@@ -157,6 +159,10 @@ JNIEXPORT jboolean JNICALL Java_com_camelight_android_util_FrameProcessor_native
 	int thd = Otsu(dst);
 	threshold(dst, dst, thd, 255, CV_THRESH_BINARY);
 
+	/* erosion & dialation: */
+	Mat myModel = getStructuringElement(CV_SHAPE_ELLIPSE,Size(11,11),Point(-1,-1));
+	dilate(dst,dst,myModel);
+
 	ConvertMatToAddr(dst, *(Mat*)addGray);
 	return true;
 }
@@ -186,9 +192,8 @@ JNIEXPORT jfloat JNICALL Java_com_camelight_android_util_FrameProcessor_nativeCa
  * Method:    nativeDetectFace
  * Signature: (J)Lorg/opencv/core/Rect;
  */
-JNIEXPORT void JNICALL Java_com_camelight_android_util_FrameProcessor_nativeDetectFace
-  (JNIEnv * env, jclass cls, jlong addGray){
-	return ;
+JNIEXPORT void JNICALL Java_com_camelight_android_util_FaceExtractor_nativeDetectFaces
+(JNIEnv * jenv, jclass, jlong thiz, jlong imageGray, jlong faces){
 }
 
 
