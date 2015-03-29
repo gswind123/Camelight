@@ -37,7 +37,8 @@ obj/local/armeabi-v7a/objs/frame_processor/FrameProcessor.o: \
  H:/Android-dev/android-ndk-r10d/sources/cxx-stl/gnu-libstdc++/4.8/include/deque \
  H:/Android-dev\Oencv4Android\OpenCV-2.4.10-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui.hpp \
  H:/Android-dev\Oencv4Android\OpenCV-2.4.10-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui_c.h \
- H:/Android-dev/android-ndk-r10d/platforms/android-19/arch-arm/usr/include/android/log.h
+ H:/Android-dev/android-ndk-r10d/platforms/android-19/arch-arm/usr/include/android/log.h \
+ H:/Android-dev\Oencv4Android\OpenCV-2.4.10-android-sdk\sdk\native\jni\/include/opencv2/contrib/detection_based_tracker.hpp
 
 H:/Android-dev/android-ndk-r10d/platforms/android-19/arch-arm/usr/include/jni.h:
 
@@ -114,3 +115,5 @@ H:/Android-dev\Oencv4Android\OpenCV-2.4.10-android-sdk\sdk\native\jni\/include/o
 H:/Android-dev\Oencv4Android\OpenCV-2.4.10-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui_c.h:
 
 H:/Android-dev/android-ndk-r10d/platforms/android-19/arch-arm/usr/include/android/log.h:
+
+H:/Android-dev\Oencv4Android\OpenCV-2.4.10-android-sdk\sdk\native\jni\/include/opencv2/contrib/detection_based_tracker.hpp:

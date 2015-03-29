@@ -66,6 +66,10 @@ public class DetectModeInteraction extends Interaction {
 			org.opencv.core.Rect face_rect = new org.opencv.core.Rect(
 					android_rect.left,android_rect.top,android_rect.width(),android_rect.height());
 			cache_bean.mode_ = FrameProcessor.AnalyzeMode(rgba.nativeObj, face_rect);
+			//yw_sun debug
+			((CameraActivity)(cacheBean_.context_)).updatePreview(Bitmap.createBitmap(bm,
+					android_rect.left, android_rect.top, android_rect.right, android_rect.bottom));
+			//--------------
 			return InteractState.STOP;
 		}
 		return InteractState.CONTINUE;

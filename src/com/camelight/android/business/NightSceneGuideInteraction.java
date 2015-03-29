@@ -1,6 +1,8 @@
 package com.camelight.android.business;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Handler;
@@ -14,6 +16,8 @@ import android.widget.FrameLayout;
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CalculateDistanceCacheBean;
+import com.camelight.android.model.CameraFrame;
+import com.camelight.android.util.ImageProcessor;
 import com.camelight.android.view.CameraActivity;
 import com.camelight.android.view.util.PropertyAnimation;
 import com.camelight.android.view.util.PropertyAnimator;
@@ -53,7 +57,14 @@ public class NightSceneGuideInteraction extends Interaction{
 				circleCenter.x = (facerRect.left + facerRect.right)/2;
 				circleCenter.y = (facerRect.top + facerRect.bottom)/2;
 				targetCircleRadius = circleCenter.x - facerRect.left;
-				
+				//yw_sun debug
+				CameraFrame frame = cacheBean_.camera_.getLatestFrame();
+				byte data[] = frame.getJPEGData();
+				Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
+				bm = ImageProcessor.rotate(bm, 90);
+				((CameraActivity)(cacheBean_.context_)).updatePreview(Bitmap.createBitmap(bm,
+						facerRect.left, facerRect.top, facerRect.right, facerRect.bottom));
+				//--------------
 				//currentRadius = targetRadius + distance * A, where distance ->[0,2.5]
 				//可以通過調節A來改變currentRadius的變化快慢。我也不是道怎麼突然變成繁體字了..
 				//這裡應該需要轉換為像素操作。
