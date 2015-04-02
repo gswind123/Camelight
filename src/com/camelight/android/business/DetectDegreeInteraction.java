@@ -17,14 +17,24 @@ import android.os.Message;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CameraFrame;
 import com.camelight.android.model.DetectDegreeCacheBean;
+import com.camelight.android.util.ContinuousDataTracker;
 import com.camelight.android.util.FaceExtractor;
 import com.camelight.android.util.FrameProcessor;
 import com.camelight.android.util.ImageProcessor;
+import com.camelight.android.util.OrientationUtil;
 
 public class DetectDegreeInteraction extends Interaction{
 
 	public DetectDegreeCacheBean cacheBean_ = new DetectDegreeCacheBean();
 	
+	/** the tracker is with an ambulator for degrees in [0, 360] */
+	private ContinuousDataTracker tracker_ = new ContinuousDataTracker(new ContinuousDataTracker.Ambulator(){
+		@Override
+		public float ambulate(float a,float b) {
+			float dis = (a-b+360)%360;
+			return Math.min(dis, 360-dis);
+		}
+	});
 	private long lastTime_ = 0;
 	
 	@Override
@@ -33,6 +43,7 @@ public class DetectDegreeInteraction extends Interaction{
 		if(bean == null) {
 			return false;
 		}
+		tracker_.clear();
 		return true;
 	}
 
@@ -62,10 +73,16 @@ public class DetectDegreeInteraction extends Interaction{
 			Utils.matToBitmap(fixed_mat, face_bm);
 			int index = (int)FrameProcessor.Predict(face_bm);
 			int angle[] = FrameProcessor.getPredictData(index);
-			bean.setDegree(new PointF(angle[0], angle[1]));
+			int light_otn = (int)OrientationUtil.getOrientation();
+			light_otn = (light_otn + angle[1] + 360)%360;
+			tracker_.addData(light_otn);
+			if(tracker_.size() == tracker_.Capacity) {
+				light_otn = (int)tracker_.calcLastestData();
+			}
+			bean.setOrientation(light_otn);
 			bean.bitmap_ = Bitmap.createBitmap(bm, rect.x, rect.y, rect.width, rect.height);
 		} else {
-			bean.setDegree(null);
+			bean.setOrientation(-1);
 		}
 		Message msg = new Message();
 		long cur_time = System.currentTimeMillis();

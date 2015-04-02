@@ -29,4 +29,9 @@
         <item name="android:textColor">#ff000000</item>
     </style>
 
+        <style name="text_20_002fa7">
+        <item name="android:textSize">20dp</item>
+        <item name="android:textColor">#ff002fa7</item>
+    </style>
+    
 </resources>
