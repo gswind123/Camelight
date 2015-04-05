@@ -5,6 +5,11 @@
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
 
+    <string name="confirm">确定</string>
+    <string name="cancel">取消</string>
+    
+    <string name="alert_start_detect_mode">开始根据当前光照检测合适的拍照模式</string>
+    
     <string name="front_light_mode">顺光模式</string>
     <string name="back_light_mode">逆光模式</string>
     <string name="night_mode">夜景模式</string>

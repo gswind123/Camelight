@@ -1,0 +1,23 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_layout"
+    android:soundEffectsEnabled="false"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#90000000"
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:paddingLeft="30dp"
+    android:paddingRight="30dp">
+
+    <include 
+        android:id="@+id/single_dialog_view"
+        layout="@layout/came_single_dialog"
+        android:visibility="gone" />
+    <include 
+        android:id="@+id/execute_dialog_view"
+        layout="@layout/came_execute_dialog"
+        android:visibility="gone" />
+    
+</LinearLayout>

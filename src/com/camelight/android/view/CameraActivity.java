@@ -36,6 +36,8 @@ import com.camelight.android.model.CalculateDistanceCacheBean;
 import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
 import com.camelight.android.util.FrameProcessor;
+import com.camelight.android.util.OrientationUtil;
+import com.camelight.android.view.util.CameDialog;
 import com.camelight.android.view.util.CameraView;
 
 public class CameraActivity extends FragmentActivity {
@@ -55,7 +57,9 @@ public class CameraActivity extends FragmentActivity {
 	private Runnable onConfirmModeFinish_ = new Runnable() {
 		@Override
 		public void run() {
-			startGuide(detectModeCacheBean_.mode_);
+			if(detectModeCacheBean_.mode_ != null) {
+				startGuide(detectModeCacheBean_.mode_);	
+			}
 		}
 	};
 	
@@ -108,7 +112,18 @@ public class CameraActivity extends FragmentActivity {
 			if(interactor_.isRunning()) {
 				interactor_.stopInteract();
 			} else {
-				startDetectFace();
+				CameDialog dialog = new CameDialog();
+				dialog.setDialogType(CameDialog.EXECUTE_DIALOG);
+				dialog.setDialogContent(getResources().getString(R.string.alert_start_detect_mode));
+				dialog.setPositiveText(getResources().getString(R.string.confirm));
+				dialog.setNegativeText(getResources().getString(R.string.cancel));
+				dialog.setOnPositiveListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						startDetectFace();
+					}
+				});
+				dialog.show(CameraActivity.this);
 			}
 		}
 	};
@@ -135,16 +150,14 @@ public class CameraActivity extends FragmentActivity {
         confirmModeFragment.setOnFinish(onConfirmModeFinish_);
         
         btnGuide_.setOnClickListener(onStartGuideListener);
-        btnCapture_.setOnClickListener(new OnClickListener() {
-			
+        btnCapture_.setOnClickListener(new OnClickListener() {		
 			@Override
 			public void onClick(View v) {
 				camera_.takePicture();
-//				detectModeCacheBean_.mode_ = BusinessMode.FRONTLIGHT;
-//				confirmMode();
 			}
 		});
         
+        OrientationUtil.register(this);
     }
 
     @Override

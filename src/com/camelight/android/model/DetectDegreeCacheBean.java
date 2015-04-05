@@ -11,7 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 public class DetectDegreeCacheBean extends CacheBean {
-	private PointF degree_ = null;
+	private float orientation_ = -1.f;
 	private Object lock = new Object();
 	
 	public CameraView camera_ = null;
@@ -20,26 +20,10 @@ public class DetectDegreeCacheBean extends CacheBean {
 	public Bitmap bitmap_ = null; // yw_sun debug
 	public FrontLightGuideInteraction uiInteraction_ = null;
 	
-	public void setDegree(PointF degree){
-		synchronized (lock) {
-			if(degree == null) {
-				degree_ = null;
-			} else {
-				degree_ = new PointF();
-				degree_.x = degree.x;
-				degree_.y = degree.y;	
-			}
-		}
+	public void setOrientation(float orientation){
+		orientation_ = orientation;
 	}
-	public PointF getDegree(){
-		if(degree_ == null) {
-			return null;
-		}
-		PointF res = new PointF();
-		synchronized(lock){
-			res.x = degree_.x;
-			res.y = degree_.y;
-		}
-		return res;
+	public float getOrientation(){
+		return orientation_;
 	}
 }

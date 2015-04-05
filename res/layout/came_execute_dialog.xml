@@ -1,0 +1,65 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/round_corner"
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:paddingTop="10dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="5dp">
+
+	<LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:orientation="vertical"
+	    android:paddingLeft="10dp"
+	    android:paddingRight="10dp"
+	    android:gravity="center">
+	    <TextView 
+	        android:id="@+id/content_text"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="15dp"
+	        android:layout_marginBottom="25dp"
+	        style="@style/text_18_000000"
+	        android:text=""/>
+	</LinearLayout>
+    
+	<View 
+	    android:layout_width="match_parent"
+	    android:layout_height="1px"
+	    android:background="#88222222"/>
+	
+    <LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="50dp"
+	    android:orientation="horizontal"
+	    android:gravity="center">
+	    <TextView 
+	        android:id="@+id/negative_text"
+	        android:layout_width="0dp"
+	        android:layout_height="match_parent"
+	        android:layout_weight="1"
+	        android:gravity="center"
+	        style="@style/text_20_002fa7"
+	        android:text=""/>
+	    <View 
+	    	android:layout_width="1px"
+	    	android:layout_height="match_parent"
+	    	android:background="#88222222"/>
+	    <TextView 
+	        android:id="@+id/positive_text"
+	        android:layout_width="0dp"
+	        android:layout_height="match_parent"
+	        android:layout_weight="1"
+	        android:gravity="center"
+	        style="@style/text_20_002fa7"
+	        android:text=""/>
+
+	</LinearLayout>
+</LinearLayout>
+
