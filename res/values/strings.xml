@@ -31,5 +31,8 @@
     <string name="desc_front_light_guide">请按箭头指示方向旋转面部朝向</string>
     
     <string name="ask_to_close_guide">是否关闭拍摄引导?</string>
+    <string name="close_guide">关闭引导</string>
+    
+    <string name="alert_front_light_guide_finish">引导结束，当前方位适合顺光拍照</string>
     
 </resources>

@@ -10,6 +10,7 @@ import org.opencv.android.OpenCVLoader;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -85,6 +86,15 @@ public class CameraActivity extends FragmentActivity {
 				dialog.setDialogContent(getResources().getString(R.string.detect_mode_canceled));
 				dialog.setSingleText(getResources().getString(R.string.i_know));
 				dialog.show(CameraActivity.this);
+			} else if(msg.what == BusinessState.FRONT_LIGHT_GUIDE_FINISH) {
+				showControlBar();
+				CameDialog dialog = new CameDialog();
+				dialog.setDialogType(CameDialog.SINGLE_DIALOG);
+				dialog.setDialogContent(getResources().getString(R.string.alert_front_light_guide_finish));
+				dialog.setSingleText(getResources().getString(R.string.i_know));
+				dialog.show(CameraActivity.this);
+			} else if(msg.what == BusinessState.FRONT_LIGHT_GUIDE_CANCEL) {
+				showControlBar();
 			}
 		}
 	};

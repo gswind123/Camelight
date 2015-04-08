@@ -1,6 +1,7 @@
 package com.camelight.android.business;
 
 import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
@@ -26,12 +28,16 @@ public class FrontLightGuideInteraction extends Interaction{
 	public DetectDegreeCacheBean cacheBean_ = new DetectDegreeCacheBean();
 	public float lightSrcOrientation_ = -1.f;
 	
+	private boolean isCanceled_ = false;
+	private boolean isPausing_ = false;
+	
 	private OnClickListener onCloseClickListener_ = new OnClickListener(){
 		@Override
 		public void onClick(View v) {
 			if(InteractionUtil.isDoubleClick()) {
 				return ;
 			}
+			pause(true);
 			CameDialog dialog = new CameDialog();
 			dialog.setDialogType(CameDialog.EXECUTE_DIALOG);
 			dialog.setPositiveText(cacheBean_.context_.getResources().getString(R.string.yes));
@@ -41,8 +47,15 @@ public class FrontLightGuideInteraction extends Interaction{
 				@Override
 				public void onClick(View v) {
 					if(cacheBean_.context_ instanceof CameraActivity) {
+						isCanceled_ = true;
 						((CameraActivity)(cacheBean_.context_)).stopCurrentInteraction();
 					}
+				}
+			});
+			dialog.setOnNegativeClick(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					pause(false);
 				}
 			});
 			dialog.show((FragmentActivity)(cacheBean_.context_));
@@ -53,7 +66,8 @@ public class FrontLightGuideInteraction extends Interaction{
 	private Thread detectDegreeThread_ = null;
 	private Handler msgHandler_ = null;
 	private PropertyAnimator animator_ = new PropertyAnimator();
-	private PropertyAnimation degreeAnimation_ = new PropertyAnimation() {
+	
+	private class FrontLightAnimation extends PropertyAnimation {
 		private final int LEFT = 1;
 		private final int RIGHT=2;
 		
@@ -67,9 +81,10 @@ public class FrontLightGuideInteraction extends Interaction{
 		private View sunRight_ = null;
 		private View arrowLeft_ = null;
 		private View arrowRight_ = null;
+		private ImageView rotatingSun_ = null;
 		private int curDirection_ = 0;
+		private int durationOfFrontLight_ = 0;
 		
-		private TextView degreeText_ = null;
 		private TextView guideText_ = null;
 		
 		private float screenWidth_ = 0.f;
@@ -80,6 +95,7 @@ public class FrontLightGuideInteraction extends Interaction{
 		private int dstWidth_ = 0;
 		private int curDuration_ = 0;
 		private final int ChangeDuration = 500;
+		private final int FrontLightDurationThreshold = 3000;
 		
 		/*
 		 * @param dir:1,left; 2,right
@@ -200,18 +216,27 @@ public class FrontLightGuideInteraction extends Interaction{
 		
 		@Override
 		public boolean update(long tweenMillsec) {
+			if(isPausing_) {
+				return true;
+			}
 			if(lightSrcOrientation_ >0) {
+				/** calculate direction and level to move*/
 				int dir = calcDstDirection(lightSrcOrientation_);
 				int level = calcLightLevel(lightSrcOrientation_);
 				if(level != curLevel_ || dir != curDirection_) {
 					setDstLevel(dir, level);
 				}
+				/** move arrow in a short interval*/
 				updateWidthChanges(tweenMillsec);
-				String text = "目标:"+lightSrcOrientation_+"\n"+"当前:"+OrientationUtil.getOrientation();
-				String desc = "\n等级:" + level;
-				desc += "\nduration:" + curDuration_;
-				degreeText_.setText(text+desc);
-				
+				/** judge if front light is satisfied*/
+				if(curLevel_ == 1 && level == 1) {
+					durationOfFrontLight_ += tweenMillsec;
+					showFrontLight(true);
+				} else {
+					durationOfFrontLight_ = 0;
+					showFrontLight(false);
+				}
+				/** alert the real guide starts when first face found*/
 				if(isVisible_ == false) {
 					degreeView_.setVisibility(View.VISIBLE);
 					isVisible_ = true;
@@ -234,14 +259,18 @@ public class FrontLightGuideInteraction extends Interaction{
 			sunRight_ = mainView_.findViewById(R.id.sun_right);
 			arrowLeft_ = mainView_.findViewById(R.id.arrow_left);
 			arrowRight_ = mainView_.findViewById(R.id.arrow_right);
-			degreeText_ = (TextView)mainView_.findViewById(R.id.degree_text);
 			guideText_ = (TextView)mainView_.findViewById(R.id.guide_text);
+			rotatingSun_ = (ImageView)mainView_.findViewById(R.id.rotating_sun);
+			
+			((AnimationDrawable)rotatingSun_.getBackground()).start();
 			setDirection(LEFT);
 			guideText_.setText(cacheBean_.context_.getResources().getString(R.string.desc_search_face));
+			
 			/** add the view to the outer frame layout*/
 			degreeView_.setVisibility(View.GONE);
 			isVisible_ = false;
 			cacheBean_.layout_.addView(mainView_);
+			
 			/** set close btn*/
 			View close_btn = mainView_.findViewById(R.id.close_btn);
 			close_btn.setOnClickListener(onCloseClickListener_);
@@ -252,7 +281,31 @@ public class FrontLightGuideInteraction extends Interaction{
 		public void finish() {
 			cacheBean_.layout_.removeView(mainView_);
 		}
-	};
+		
+		/** when in level 1, change UI to show it is with considerable light*/
+		private void showFrontLight(boolean isFrontLight) {
+			int vis_rotating_sun;
+			int vis_other;
+			if(isFrontLight) {
+				vis_rotating_sun = View.VISIBLE;
+				vis_other = View.GONE;
+			} else {
+				vis_rotating_sun = View.GONE;
+				vis_other = View.VISIBLE;	
+			}
+			rotatingSun_.setVisibility(vis_rotating_sun);
+			degreeView_.setVisibility(vis_other);
+		}
+		
+		/*
+		 * @return: true if it is confirm to be front light; false otherwise.
+		 * */
+		public boolean confirmFrontLight(){
+			return (durationOfFrontLight_ >= FrontLightDurationThreshold);
+		}
+	}
+	
+	private FrontLightAnimation degreeAnimation_ = new FrontLightAnimation();
 	
 	@Override
 	public boolean onInteractStart(CacheBean param) {
@@ -275,6 +328,12 @@ public class FrontLightGuideInteraction extends Interaction{
 		}
 	
 		animator_.update();
+		
+		if(degreeAnimation_.confirmFrontLight()) {
+			isCanceled_ = false;
+			return InteractState.STOP;
+		}
+		
 		return InteractState.CONTINUE;
 	}
 
@@ -284,11 +343,20 @@ public class FrontLightGuideInteraction extends Interaction{
 		if(bean == null) {
 			return ;
 		}
-
+		/** stop working thread*/
 		animator_.removeAnimation(this.degreeAnimation_);
 		if(detectDegreeInteractor_ != null && detectDegreeInteractor_.isRunning()) {
 			detectDegreeInteractor_.stopInteract();
 		}
+		/** inform the activity*/
+		CameraActivity activity = (CameraActivity) cacheBean_.context_;
+		Message msg = new Message();
+		if(isCanceled_) {
+			msg.what = BusinessState.FRONT_LIGHT_GUIDE_CANCEL;
+		} else {
+			msg.what = BusinessState.FRONT_LIGHT_GUIDE_FINISH;	
+		}
+		activity.getBusinessHandler().sendMessage(msg);
 	}
 	
 	private DetectDegreeCacheBean checkParam(CacheBean param) {
@@ -327,6 +395,14 @@ public class FrontLightGuideInteraction extends Interaction{
 		};
 		detectDegreeThread_ = thread;
 		detectDegreeThread_.start();
+	}
+	
+	/*
+	 * Used to pause the degree animation
+	 * @param: pause:true if to pause the interaction,false otherwise;
+	 * */
+	public void pause(boolean pause) {
+		isPausing_ = pause;
 	}
 	
 	public void sendMessage(Message msg){

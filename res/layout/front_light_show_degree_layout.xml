@@ -3,19 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    
-    <ImageView 
-        android:id="@+id/close_btn"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:background="@drawable/close_btn_selector"/>
-    
+        
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="#80ffffff"
+        android:layout_height="wrap_content"
+        android:background="#70ffffff"
         android:orientation="vertical"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_gravity="bottom"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
         <TextView 
             android:id="@+id/guide_text"
             android:layout_width="wrap_content"
@@ -23,6 +20,13 @@
             style="@style/text_20_000000"
             android:text="@string/desc_front_light_guide"/>
         
+        <ImageView 
+	        android:id="@+id/rotating_sun"
+	        android:layout_width="50dp"
+	        android:layout_height="50dp"
+	        android:background="@anim/dynamic_sun"
+	        android:visibility="gone" />
+       
 	    <LinearLayout
 	        android:id="@+id/degree_view"
 	        android:layout_width="wrap_content"
@@ -65,21 +69,16 @@
 		        android:background="@drawable/sun" />
 	    </LinearLayout>
 	    
-        
+        <TextView 
+	        android:id="@+id/close_btn"
+	        android:layout_width="180dp"
+	        android:layout_height="40dp"
+	        android:layout_marginTop="10dp"
+	        android:gravity="center"
+	        style="@style/text_20_000000"
+	        android:background="@drawable/btn_close_guide_selector"
+	        android:text="@string/close_guide"/>
     </LinearLayout>
         
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="100dp">
-		
-        <TextView
-            android:id="@+id/degree_text" 
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="15sp" />
-        
-	</LinearLayout>
     
 </FrameLayout>
