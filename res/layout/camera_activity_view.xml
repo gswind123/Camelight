@@ -1,4 +1,4 @@
-<LinearLayout 
+<FrameLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,8 +8,7 @@
 	<FrameLayout
 	    android:id="@+id/camera_frame"
 	    android:layout_width="match_parent"
-	    android:layout_height="0dp"
-	    android:layout_weight="1">
+	    android:layout_height="match_parent">
 	    
 	    
 	    <com.camelight.android.view.util.CameraView
@@ -20,12 +19,13 @@
 	</FrameLayout>
 	
 	<LinearLayout
-	    android:id="@+id/camera_menu"
+	    android:id="@+id/control_bar"
 	    android:layout_width="match_parent"
 	    android:layout_height="70dp"
 	    android:gravity="center"
 	    android:background="#cc020202"
-	    android:orientation="horizontal">
+	    android:orientation="horizontal"
+	    android:layout_gravity="bottom">
 	    
 	    <LinearLayout
 	        android:layout_width="0dp"
@@ -67,4 +67,4 @@
 	    </LinearLayout>
 	    
 	</LinearLayout>
-</LinearLayout>
+</FrameLayout>

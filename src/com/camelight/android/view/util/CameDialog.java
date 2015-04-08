@@ -130,6 +130,11 @@ public class CameDialog extends Fragment{
 		}
 		contentView_ = (TextView)mainDialog_.findViewById(R.id.content_text);
 		contentView_.setText(strContentText_);
+		/** Add an empty OnClickListener to block click event*/
+		mainContainer_.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {}
+		});
 		return mainContainer_;
 	}
 	

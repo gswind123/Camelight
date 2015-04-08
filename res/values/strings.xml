@@ -5,10 +5,18 @@
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
 
+    <string name="yes">是</string>
+    <string name="no">否</string>
+    <string name="i_know">我知道了</string>
     <string name="confirm">确定</string>
     <string name="cancel">取消</string>
     
+    <string name="detect_mode_canceled">模式检测已取消</string>
+    
     <string name="alert_start_detect_mode">开始根据当前光照检测合适的拍照模式</string>
+    
+   	<string name="alert_aiming_face">请将镜头对准脸部</string>
+    <string name="alert_mode_detecting">正在检测当前场景的光照情况...</string>
     
     <string name="front_light_mode">顺光模式</string>
     <string name="back_light_mode">逆光模式</string>
@@ -18,5 +26,10 @@
     <string name="click_to_change_mode">点击切换模式</string>
     <string name="or_text">或者</string>
     <string name="confirm_this_mode">选用上面的模式</string>
+    
+    <string name="desc_search_face">正在寻找被拍摄者的面部...</string>
+    <string name="desc_front_light_guide">请按箭头指示方向旋转面部朝向</string>
+    
+    <string name="ask_to_close_guide">是否关闭拍摄引导?</string>
     
 </resources>

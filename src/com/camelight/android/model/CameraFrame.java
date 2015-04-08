@@ -19,14 +19,16 @@ public class CameraFrame {
 	private int width_ = 0;
 	private int height_ = 0;
 	private int rotation_ = 0;//The rotation of raw image
+	private boolean isMirror_ = false;//Is the frame mirror symmetry
 	
-	public CameraFrame(byte[] raw_byte, int w, int h, int rotation) {
+	public CameraFrame(byte[] raw_byte, int w, int h, int rotation, boolean is_mirror) {
 		rawData_ = raw_byte;
 		yuvFrameMat_ = new Mat(h+h/2, w, CvType.CV_8UC1);
 		yuvFrameMat_.put(0, 0, rawData_);
 		width_ = w;
 		height_ = h;
 		rotation_ = rotation;
+		isMirror_ = is_mirror;
 	}
 	public byte[] getRawData(){
 		return rawData_;
@@ -49,6 +51,10 @@ public class CameraFrame {
 	public int getRotation(){
 		return rotation_;
 	}
+	public boolean isMirror(){
+		return isMirror_;
+	}
+	
     public Mat gray() {
     	return yuvFrameMat_.submat(0, height_, 0, width_);
     }

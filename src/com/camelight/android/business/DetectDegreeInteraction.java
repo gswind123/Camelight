@@ -74,13 +74,19 @@ public class DetectDegreeInteraction extends Interaction{
 			int index = (int)FrameProcessor.Predict(face_bm);
 			int angle[] = FrameProcessor.getPredictData(index);
 			int light_otn = (int)OrientationUtil.getOrientation();
-			light_otn = (light_otn + angle[1] + 360)%360;
+			if(frame.isMirror()) {
+				light_otn = (light_otn - angle[1] + 360)%360;
+			} else {
+				light_otn = (light_otn + angle[1] + 360)%360;
+			}
 			tracker_.addData(light_otn);
 			if(tracker_.size() == tracker_.Capacity) {
 				light_otn = (int)tracker_.calcLastestData();
 			}
 			bean.setOrientation(light_otn);
 			bean.bitmap_ = Bitmap.createBitmap(bm, rect.x, rect.y, rect.width, rect.height);
+			bean.faceRect_ = new Rect(rect.x, rect.y, rect.x+rect.width, rect.y+rect.height);
+			bean.adjustedFrame_ = bm;
 		} else {
 			bean.setOrientation(-1);
 		}

@@ -1,27 +1,15 @@
 package com.camelight.android.business;
 
 import org.opencv.core.Mat;
-import org.opencv.engine.OpenCVEngineInterface;
-import org.opencv.imgproc.Imgproc;
-
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.PointF;
-import android.graphics.Rect;
 import android.media.FaceDetector.Face;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
-import android.view.GestureDetector;
-import android.view.GestureDetector.OnGestureListener;
-import android.view.MotionEvent;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnTouchListener;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.ImageView;
-import android.widget.FrameLayout;
-
+import android.view.View.OnClickListener;
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CameraFrame;
@@ -29,18 +17,44 @@ import com.camelight.android.model.DetectModeCacheBean;
 import com.camelight.android.util.FaceExtractor;
 import com.camelight.android.util.FrameProcessor;
 import com.camelight.android.util.ImageProcessor;
+import com.camelight.android.util.InteractionUtil;
 import com.camelight.android.view.CameraActivity;
 import com.camelight.android.view.util.CameraView;
 
 public class DetectModeInteraction extends Interaction {
 	
 	private DetectModeCacheBean cacheBean_ = null;
+	
+	private boolean isCanceled_ = false;
+	private View mainView_ = null;
+	private OnClickListener onCancelClick_ = new OnClickListener(){
+		@Override
+		public void onClick(View v) {
+			if(InteractionUtil.isDoubleClick()) {
+				return ;
+			}
+			DetectModeCacheBean bean = checkParam(cacheBean_);
+			if(bean == null) {
+				return ;
+			}
+			isCanceled_ = true;
+			CameraActivity act = (CameraActivity)bean.context_;
+			act.cancelCurrentInteraction();
+		}
+	};
+	
 	@Override
 	public boolean onInteractStart(CacheBean param) {
 		DetectModeCacheBean cache_bean = checkParam(param);
 		if(cache_bean == null) {
 			return false;
 		}
+		/** add detect mode view*/
+		LayoutInflater inflater = (LayoutInflater)cacheBean_.context_.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		mainView_ = inflater.inflate(R.layout.detect_mode_view, null);
+		View btn_cancel = mainView_.findViewById(R.id.btn_close);
+		btn_cancel.setOnClickListener(onCancelClick_);
+		cacheBean_.layout_.addView(mainView_);
 		return true;
 	}
 
@@ -80,9 +94,16 @@ public class DetectModeInteraction extends Interaction {
 			return ;
 		}
 		if(cache_bean.context_ instanceof CameraActivity) {
-			Message result = new Message();
-			result.what = BusinessState.DETECT_FACE_FINISH;
 			CameraActivity act = (CameraActivity) cache_bean.context_;
+			/** remove detect mode view*/
+			cache_bean.layout_.removeView(mainView_);
+			/** inform the activity the interaction is done*/
+			Message result = new Message();
+			if(isCanceled_) {
+				result.what = BusinessState.DETECT_FACE_CANCEL;	
+			} else {
+				result.what = BusinessState.DETECT_FACE_FINISH;	
+			}
 			Handler business_handler = act.getBusinessHandler();
 			business_handler.sendMessage(result);
 		}

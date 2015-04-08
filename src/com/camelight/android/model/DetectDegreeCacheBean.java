@@ -6,14 +6,14 @@ import com.camelight.android.view.util.CameraView;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.PointF;
+import android.graphics.Rect;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 
 public class DetectDegreeCacheBean extends CacheBean {
 	private float orientation_ = -1.f;
-	private Object lock = new Object();
 	
+	public Rect faceRect_ = new Rect();
+	public Bitmap adjustedFrame_ = null;
 	public CameraView camera_ = null;
 	public Context context_ = null;
 	public FrameLayout layout_ = null;

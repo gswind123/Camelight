@@ -14,7 +14,7 @@ public class PropertyAnimator {
 	private ArrayList<PropertyAnimation> animQueue_ = new ArrayList<PropertyAnimation>();
 	
 	public PropertyAnimator(){
-		curTimeMillsec_ = System.currentTimeMillis();
+		curTimeMillsec_ = 0;
 	}
 	
 	public void addAnimation(PropertyAnimation anim){
@@ -23,6 +23,10 @@ public class PropertyAnimator {
 		curTimeMillsec_ = System.currentTimeMillis();
 	}
 	public void update(){
+		if(curTimeMillsec_ == 0) {
+			curTimeMillsec_ = System.currentTimeMillis();
+			return ;
+		}
 		long cur_time = System.currentTimeMillis();
 		long interval = (int)(cur_time - curTimeMillsec_);
 		for(PropertyAnimation anim:animQueue_) {
@@ -31,6 +35,7 @@ public class PropertyAnimator {
 				removeAnimation(anim);
 			}
 		}
+		curTimeMillsec_ = cur_time;
 	}
 	
 	public void removeAnimation(PropertyAnimation anim){

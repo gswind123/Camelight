@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="#90000000"
     android:orientation="vertical"
-    android:paddingTop="80dp"
+    android:paddingTop="50dp"
     android:paddingLeft="50dp"
     android:paddingRight="50dp">
     <LinearLayout
@@ -76,5 +76,23 @@
 		        android:text="@string/confirm_this_mode"
 		        style="@style/text_18_000000"/>
 		</LinearLayout>
+		
+		<LinearLayout
+		    android:id="@+id/btn_close"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:gravity="center_vertical"
+		    android:layout_marginTop="20dp"
+		    android:padding="10dp"
+		    android:orientation="horizontal"
+		    android:background="@drawable/select_mode_item_selector">
+		    <TextView 
+		        android:layout_width="match_parent"
+		        android:layout_height="40dp"
+		        android:gravity="center"
+		        android:text="@string/cancel"
+		        style="@style/text_18_000000"/>
+		</LinearLayout>
+		
 	</LinearLayout>
 </LinearLayout>

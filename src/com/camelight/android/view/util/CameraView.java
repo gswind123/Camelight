@@ -5,7 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.acl.LastOwnerException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import junit.framework.Test;
 
@@ -29,13 +31,16 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.hardware.Camera.Area;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.Parameters;
 import android.media.FaceDetector.Face;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActionBar.LayoutParams;
 import android.content.Context;
@@ -133,6 +138,8 @@ public class CameraView extends SurfaceView
 			camera_.setPreviewCallback(this);
 			Camera.Parameters params = camera_.getParameters();     
 			params.setPreviewFormat(ImageFormat.NV21);
+			params.setPreviewSize(height, width);
+			params.setPictureSize(height*2, width*2);
 			camera_.setParameters(params);
 			camera_.setDisplayOrientation(90);  
 			try{
@@ -209,12 +216,15 @@ public class CameraView extends SurfaceView
 	public void onPreviewFrame(byte[] data, Camera camera) {
 		Size size = camera.getParameters().getPreviewSize();
 		int rotation = 0;
+		boolean is_mirror = false;
 		if(cameraFacing_ == CAMERA_FACE_FRONT) {
 			rotation = -90;
+			is_mirror = true;
 		} else if(cameraFacing_ == CAMERA_FACE_BACK) {
 			rotation = 90;
+			is_mirror = false;
 		}
-		CameraFrame cur_frame = new CameraFrame(data, size.width, size.height, rotation);
+		CameraFrame cur_frame = new CameraFrame(data, size.width, size.height, rotation, is_mirror);
 		synchronized (this) {
 			latestFrame_ = cur_frame;
 		}
@@ -231,10 +241,26 @@ public class CameraView extends SurfaceView
 		return ret_frame;
 	}
 	
-	public void setFocusAt(int x, int y) {
-		if(camera_ == null) {
+	/*
+	 * @param:	area:The area to focus at; 
+	 *		   	width:width of the current camera frame; 
+	 * 			height:height of the current camera frame 
+	 * */
+	@SuppressLint("NewApi") 
+	public void setFocusAt(Rect area, int width, int height) {
+		if(camera_ == null || latestFrame_ == null) {
 			return ;
 		}
-		//TODO:Ìí¼Ó¾Û½¹´úÂë
+		//Map (x,y) to coordination in [-1000, 1000]
+		int mapped_x = (int)(-1000 + 2000.f*area.left/width);
+		int mapped_y = (int)(-1000 + 2000.f*area.right/height);
+		Rect mapped_area = new Rect(mapped_x, mapped_y, mapped_x+area.width(), mapped_y+area.height());
+		ArrayList<Area> focus_areas = new ArrayList<Area>();
+		focus_areas.add(new Area(mapped_area, 1000));
+		Parameters param = camera_.getParameters();
+		param.setMeteringAreas(focus_areas);
+		param.setFocusAreas(focus_areas);
+		camera_.setParameters(param);
+		camera_.autoFocus(null);
 	}
 }

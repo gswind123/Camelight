@@ -1,27 +1,23 @@
 package com.camelight.android.business;
 
-import javax.security.auth.PrivateCredentialPermission;
-
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.PointF;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
-import android.view.SurfaceHolder;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.TextView;
-
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.util.DeviceUtil;
+import com.camelight.android.util.InteractionUtil;
 import com.camelight.android.util.OrientationUtil;
 import com.camelight.android.view.CameraActivity;
+import com.camelight.android.view.util.CameDialog;
 import com.camelight.android.view.util.PropertyAnimation;
 import com.camelight.android.view.util.PropertyAnimator;
 
@@ -30,6 +26,29 @@ public class FrontLightGuideInteraction extends Interaction{
 	public DetectDegreeCacheBean cacheBean_ = new DetectDegreeCacheBean();
 	public float lightSrcOrientation_ = -1.f;
 	
+	private OnClickListener onCloseClickListener_ = new OnClickListener(){
+		@Override
+		public void onClick(View v) {
+			if(InteractionUtil.isDoubleClick()) {
+				return ;
+			}
+			CameDialog dialog = new CameDialog();
+			dialog.setDialogType(CameDialog.EXECUTE_DIALOG);
+			dialog.setPositiveText(cacheBean_.context_.getResources().getString(R.string.yes));
+			dialog.setNegativeText(cacheBean_.context_.getResources().getString(R.string.no));
+			dialog.setDialogContent(cacheBean_.context_.getResources().getString(R.string.ask_to_close_guide));
+			dialog.setOnPositiveListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					if(cacheBean_.context_ instanceof CameraActivity) {
+						((CameraActivity)(cacheBean_.context_)).stopCurrentInteraction();
+					}
+				}
+			});
+			dialog.show((FragmentActivity)(cacheBean_.context_));
+		}
+	};
+	
 	private Interactor detectDegreeInteractor_ = null;
 	private Thread detectDegreeThread_ = null;
 	private Handler msgHandler_ = null;
@@ -37,10 +56,10 @@ public class FrontLightGuideInteraction extends Interaction{
 	private PropertyAnimation degreeAnimation_ = new PropertyAnimation() {
 		private final int LEFT = 1;
 		private final int RIGHT=2;
-		private final float SPEED = 0.002f/** pixels per millsec */;
 		
 		private boolean isVisible_;
 		
+		private View mainView_ = null;
 		private View degreeView_ = null;
 		private View faceLeft_ = null;
 		private View faceRight_ = null;
@@ -51,10 +70,16 @@ public class FrontLightGuideInteraction extends Interaction{
 		private int curDirection_ = 0;
 		
 		private TextView degreeText_ = null;
+		private TextView guideText_ = null;
 		
-		private float dstWidthDip_ = 0.f;
-		private float minWidth_ = 0.f;
 		private float screenWidth_ = 0.f;
+		
+		private int curLevel_ = 0;
+		private int dstLevel_ = 0;
+		private int startWidth_ = 0;
+		private int dstWidth_ = 0;
+		private int curDuration_ = 0;
+		private final int ChangeDuration = 500;
 		
 		/*
 		 * @param dir:1,left; 2,right
@@ -98,10 +123,10 @@ public class FrontLightGuideInteraction extends Interaction{
 		 * level 5: a in [100, + ]; aw = 65%*w
 		 * */
 		private final float levelBounds_[] = new float[]{
-			0, 20.f, 40.f, 60.f, 100.f
+			0, 25.f, 50.f, 80.f, 120.f
 		};
 		private final float levelWeight_[] = new float[]{
-			0, /*L1:*/0.f, /*L2:*/0.15f, /*L3:*/0.30f, /*L4:*/0.50f,/*L5:*/0.65f   	
+			0, /*L1:*/0.f, /*L2:*/0.2f, /*L3:*/0.35f, /*L4:*/0.50f,/*L5:*/0.65f   	
 		};
 		private int calcLightLevel(float lt_src){
 			int delta = (int)(lt_src - OrientationUtil.getOrientation());
@@ -129,23 +154,69 @@ public class FrontLightGuideInteraction extends Interaction{
 			}
 			return screenWidth_*levelWeight_[level];
 		}
+		private void setDstLevel(int dir, int level) {
+			/** set a dst level and make the animation to move to it*/
+			View arrow = getArrowView();
+			startWidth_ = arrow.getLayoutParams().width;
+			dstWidth_ = (int)calcDstArrowWidth(level);
+			if(dir == LEFT) {
+				dstWidth_ *= -1;
+			}
+			if(curDirection_ == LEFT) {
+				startWidth_ *= -1;
+			}
+			dstLevel_ = level;
+			curDuration_ = 0;
+		}
+		private void updateWidthChanges(long tween) {
+			if(curLevel_ == dstLevel_) {
+				return ;
+			}
+			View arrow = getArrowView();
+			LayoutParams lp = arrow.getLayoutParams();
+			int cur_width = lp.width;
+			if(curDirection_ == LEFT) {
+				cur_width *= -1;
+			}
+			
+			curDuration_ += tween;
+			int abs_dis = Math.abs(cur_width - dstWidth_);
+			if(abs_dis < 5){
+				curLevel_ = dstLevel_;
+				cur_width = dstWidth_;
+			} else {
+				cur_width = (int)(startWidth_ + (dstWidth_ - startWidth_)*Math.min(1.f, (curDuration_*1.f/ChangeDuration)));
+			}
+			int dir = LEFT;
+			if(cur_width > 0){
+				dir = RIGHT;
+			}
+			setDirection(dir);
+			arrow = getArrowView();
+			lp = arrow.getLayoutParams();
+			lp.width = Math.abs(cur_width);
+			arrow.setLayoutParams(lp);
+		}
 		
 		@Override
 		public boolean update(long tweenMillsec) {
 			if(lightSrcOrientation_ >0) {
+				int dir = calcDstDirection(lightSrcOrientation_);
+				int level = calcLightLevel(lightSrcOrientation_);
+				if(level != curLevel_ || dir != curDirection_) {
+					setDstLevel(dir, level);
+				}
+				updateWidthChanges(tweenMillsec);
+				String text = "目标:"+lightSrcOrientation_+"\n"+"当前:"+OrientationUtil.getOrientation();
+				String desc = "\n等级:" + level;
+				desc += "\nduration:" + curDuration_;
+				degreeText_.setText(text+desc);
+				
 				if(isVisible_ == false) {
 					degreeView_.setVisibility(View.VISIBLE);
 					isVisible_ = true;
+					guideText_.setText(cacheBean_.context_.getResources().getString(R.string.desc_front_light_guide));
 				}
-				setDirection(calcDstDirection(lightSrcOrientation_));
-				View arrow = getArrowView();
-				LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)arrow.getLayoutParams();
-				int level = calcLightLevel(lightSrcOrientation_);
-				lp.width = (int)calcDstArrowWidth(level);
-				arrow.setLayoutParams(lp);
-				String text = "目标:"+lightSrcOrientation_+"\n"+"当前:"+OrientationUtil.getOrientation();
-				String desc = "\n等级:" + level;
-				degreeText_.setText(text+desc);
 			}
 			return true;
 		}
@@ -155,28 +226,31 @@ public class FrontLightGuideInteraction extends Interaction{
 			screenWidth_ = DeviceUtil.getScreenSize(cacheBean_.context_)[0];
 			CameraActivity act = (CameraActivity) cacheBean_.context_;
 			LayoutInflater inflater = (LayoutInflater)act.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			degreeView_ = inflater.inflate(R.layout.front_light_show_degree_layout, null);
-			faceLeft_ = degreeView_.findViewById(R.id.face_left);
-			faceRight_ = degreeView_.findViewById(R.id.face_right);
-			sunLeft_ = degreeView_.findViewById(R.id.sun_left);
-			sunRight_ = degreeView_.findViewById(R.id.sun_right);
-			arrowLeft_ = degreeView_.findViewById(R.id.arrow_left);
-			arrowRight_ = degreeView_.findViewById(R.id.arrow_right);
-			degreeText_ = (TextView)degreeView_.findViewById(R.id.degree_text);
-			minWidth_ = DeviceUtil.getPixelFromDip(cacheBean_.context_, 25.f);
+			mainView_ = inflater.inflate(R.layout.front_light_show_degree_layout, null);
+			degreeView_ = mainView_.findViewById(R.id.degree_view);
+			faceLeft_ = mainView_.findViewById(R.id.face_left);
+			faceRight_ = mainView_.findViewById(R.id.face_right);
+			sunLeft_ = mainView_.findViewById(R.id.sun_left);
+			sunRight_ = mainView_.findViewById(R.id.sun_right);
+			arrowLeft_ = mainView_.findViewById(R.id.arrow_left);
+			arrowRight_ = mainView_.findViewById(R.id.arrow_right);
+			degreeText_ = (TextView)mainView_.findViewById(R.id.degree_text);
+			guideText_ = (TextView)mainView_.findViewById(R.id.guide_text);
 			setDirection(LEFT);
+			guideText_.setText(cacheBean_.context_.getResources().getString(R.string.desc_search_face));
 			/** add the view to the outer frame layout*/
 			degreeView_.setVisibility(View.GONE);
 			isVisible_ = false;
-			int wrap_content = ViewGroup.LayoutParams.WRAP_CONTENT;
-			ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(wrap_content, wrap_content);
-			cacheBean_.layout_.addView(degreeView_, lp);
+			cacheBean_.layout_.addView(mainView_);
+			/** set close btn*/
+			View close_btn = mainView_.findViewById(R.id.close_btn);
+			close_btn.setOnClickListener(onCloseClickListener_);
 			return true;
 		}
 		
 		@Override
 		public void finish() {
-			cacheBean_.layout_.removeView(degreeView_);
+			cacheBean_.layout_.removeView(mainView_);
 		}
 	};
 	

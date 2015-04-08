@@ -22,6 +22,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -36,6 +39,7 @@ import com.camelight.android.model.CalculateDistanceCacheBean;
 import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
 import com.camelight.android.util.FrameProcessor;
+import com.camelight.android.util.InteractionUtil;
 import com.camelight.android.util.OrientationUtil;
 import com.camelight.android.view.util.CameDialog;
 import com.camelight.android.view.util.CameraView;
@@ -45,6 +49,7 @@ public class CameraActivity extends FragmentActivity {
 	public ConfirmModeFragment confirmModeFragment = null;
 	
 	private CameraView camera_;
+	private View controlBar_;
 	private ImageView btnCapture_;
 	private ImageView preView_;
 	private ImageView btnGuide_;
@@ -57,8 +62,10 @@ public class CameraActivity extends FragmentActivity {
 	private Runnable onConfirmModeFinish_ = new Runnable() {
 		@Override
 		public void run() {
-			if(detectModeCacheBean_.mode_ != null) {
+			if(detectModeCacheBean_.mode_ != BusinessMode.NULL) {
 				startGuide(detectModeCacheBean_.mode_);	
+			} else {
+				CameraActivity.this.showControlBar();
 			}
 		}
 	};
@@ -71,7 +78,13 @@ public class CameraActivity extends FragmentActivity {
 				if(detectModeCacheBean_.faces_ != null) {
 					confirmMode();
 				}
-				getSupportFragmentManager();
+			} else if(msg.what == BusinessState.DETECT_FACE_CANCEL) {
+				showControlBar();
+				CameDialog dialog = new CameDialog();
+				dialog.setDialogType(CameDialog.SINGLE_DIALOG);
+				dialog.setDialogContent(getResources().getString(R.string.detect_mode_canceled));
+				dialog.setSingleText(getResources().getString(R.string.i_know));
+				dialog.show(CameraActivity.this);
 			}
 		}
 	};
@@ -109,6 +122,9 @@ public class CameraActivity extends FragmentActivity {
 	private OnClickListener onStartGuideListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
+			if(InteractionUtil.isDoubleClick()) {
+				return ;
+			}
 			if(interactor_.isRunning()) {
 				interactor_.stopInteract();
 			} else {
@@ -120,13 +136,29 @@ public class CameraActivity extends FragmentActivity {
 				dialog.setOnPositiveListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						startDetectFace();
+						if(InteractionUtil.isDoubleClick()) {
+							return ;
+						}
+						hideControlBar();
+						Handler handler = new Handler();
+						handler.postDelayed(new Runnable() {
+							@Override
+							public void run() {
+								startDetectMode();
+							}
+						}, 500);
 					}
 				});
 				dialog.show(CameraActivity.this);
 			}
 		}
 	};
+	
+	public void cancelCurrentInteraction() {
+		if(interactor_!= null && interactor_.isRunning()) {
+			interactor_.stopInteract();
+		}
+	}
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
@@ -139,6 +171,7 @@ public class CameraActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_activity_view);
         camera_ = (CameraView) findViewById(R.id.camera_surface);
+        controlBar_ = findViewById(R.id.control_bar);
         btnCapture_ = (ImageView) findViewById(R.id.btn_take_photo);
         btnGuide_ = (ImageView) findViewById(R.id.btn_start_guide);
         cameraLayout_ = (FrameLayout) findViewById(R.id.camera_frame);
@@ -153,7 +186,9 @@ public class CameraActivity extends FragmentActivity {
         btnCapture_.setOnClickListener(new OnClickListener() {		
 			@Override
 			public void onClick(View v) {
-				camera_.takePicture();
+				if(InteractionUtil.isDoubleClick() == false) {
+					camera_.takePicture();
+				}
 			}
 		});
         
@@ -187,7 +222,7 @@ public class CameraActivity extends FragmentActivity {
     	return businessHandler_;
     }
     
-    public void startDetectFace(){
+    public void startDetectMode(){
 		DetectModeCacheBean bean = detectModeCacheBean_;
 		bean.camera_ = camera_;
 		bean.context_ = CameraActivity.this;
@@ -195,7 +230,7 @@ public class CameraActivity extends FragmentActivity {
 		interactor_.setParam(bean);
 		DetectModeInteraction detect_mode = new DetectModeInteraction();
 		interactor_.setInteraction(detect_mode);
-		interactor_.startInteract(100);
+		interactor_.startInteract(300);
     }
     
     public void startFrontLightGuide(){
@@ -246,8 +281,47 @@ public class CameraActivity extends FragmentActivity {
     }
     
     public void updatePreview(Bitmap bitmap) {
+    	if(bitmap == null) {
+    		return ;
+    	}
     	Bitmap bmp = Bitmap.createBitmap(bitmap);
     	BitmapDrawable drawable = new BitmapDrawable(bmp);
     	preView_.setBackgroundDrawable(drawable);
+    }
+    
+    public void stopCurrentInteraction() {
+    	if(interactor_ != null && interactor_.isRunning()) {
+    		interactor_.stopInteract();
+    	}
+    }
+    
+    public void hideControlBar() {
+    	Animation anim = new TranslateAnimation(
+    			Animation.RELATIVE_TO_SELF, 0.f,
+    			Animation.RELATIVE_TO_SELF, 0.f,
+    			Animation.RELATIVE_TO_SELF, 0.f,
+    			Animation.RELATIVE_TO_SELF, 1.f);
+    	anim.setAnimationListener(new AnimationListener() {	
+			@Override
+			public void onAnimationStart(Animation animation) {}
+			@Override
+			public void onAnimationRepeat(Animation animation) {}
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				controlBar_.setVisibility(View.GONE);
+			}
+		});
+    	anim.setDuration(1000);
+    	controlBar_.startAnimation(anim);
+    }
+    public void showControlBar() {
+    	Animation anim = new TranslateAnimation(
+    			Animation.RELATIVE_TO_SELF, 0.f,
+    			Animation.RELATIVE_TO_SELF, 0.f,
+    			Animation.RELATIVE_TO_SELF, 1.f,
+    			Animation.RELATIVE_TO_SELF, 0.f);
+    	anim.setDuration(1000);
+    	controlBar_.setVisibility(View.VISIBLE);
+    	controlBar_.startAnimation(anim);
     }
 }

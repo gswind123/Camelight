@@ -4,6 +4,7 @@ import com.camelight.android.business.BusinessMode;
 import com.camelight.android.model.AnimationCacheBean;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
+import com.camelight.android.util.InteractionUtil;
 
 import com.camelight.android.R;
 
@@ -40,6 +41,17 @@ public class ConfirmModeFragment extends Fragment implements OnClickListener{
 	private Runnable onFinish_ = null;
 	private AnimationCacheBean animCache_ = new AnimationCacheBean();
 	
+	private OnClickListener onCancelClickListener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			if(InteractionUtil.isDoubleClick()) {
+				return ;
+			}
+			cacheBean_.mode_ = BusinessMode.NULL;
+			finish();
+		}
+	};
+	
 	private Runnable onSelectModeFinish_ = new Runnable(){
 		@Override
 		public void run() {
@@ -70,6 +82,8 @@ public class ConfirmModeFragment extends Fragment implements OnClickListener{
 		mainView_.setOnClickListener(this);
 		modeLayout_.setOnClickListener(this);
 		confirmLayout_.setOnClickListener(this);
+		View btn_cancel = mainView_.findViewById(R.id.btn_close);
+		btn_cancel.setOnClickListener(onCancelClickListener);
 		setModeLayoutByCacheBean();
 		return mainView_;
 	}
@@ -79,7 +93,7 @@ public class ConfirmModeFragment extends Fragment implements OnClickListener{
 		if(view_id == R.id.detected_mode) {
 			selectMode();
 		} else if(view_id == R.id.confirm_mode) {
-			quit();
+			finish();
 		} else if(view_id == R.id.main_layout) {
 			;
 		}
@@ -97,7 +111,7 @@ public class ConfirmModeFragment extends Fragment implements OnClickListener{
 		onFinish_ = finish;
 	}
 	
-	private void quit(){
+	private void finish(){
 		getActivity().onBackPressed();
 	}
 	
