@@ -54,6 +54,7 @@ public class CalculateDistanceInteraction extends Interaction{
 			Mat face_mat = new Mat(rgba, cv_rect);
 			distance = FrameProcessor.CalculateBestDistance(face_mat.nativeObj);
 			bean.setDistance(distance);
+			bean.curFrame_ = frame;
 		} else {
 			bean.setDistance(0);
 		}

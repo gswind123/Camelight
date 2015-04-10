@@ -15,6 +15,7 @@ public class CalculateDistanceCacheBean extends CacheBean{
 	public Context context_ = null;
 	public FrameLayout layout_ = null;
 	public NightSceneGuideInteraction uiInteraction_ = null;
+	public CameraFrame curFrame_ = null;
 	
 	public Rect faceRect_ = new Rect();
 	

@@ -258,6 +258,14 @@ public class CameraView extends SurfaceView
 		ArrayList<Area> focus_areas = new ArrayList<Area>();
 		focus_areas.add(new Area(mapped_area, 1000));
 		Parameters param = camera_.getParameters();
+		int num = param.getMaxNumMeteringAreas();
+		if(num == 0) {
+			return ;
+		}
+		num = param.getMaxNumFocusAreas();
+		if(num == 0) {
+			return ;
+		}
 		param.setMeteringAreas(focus_areas);
 		param.setFocusAreas(focus_areas);
 		camera_.setParameters(param);

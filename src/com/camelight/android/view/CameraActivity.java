@@ -30,12 +30,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.camelight.android.R;
+import com.camelight.android.business.BackLightInteraction;
 import com.camelight.android.business.BusinessMode;
 import com.camelight.android.business.BusinessState;
 import com.camelight.android.business.DetectModeInteraction;
 import com.camelight.android.business.FrontLightGuideInteraction;
 import com.camelight.android.business.Interactor;
 import com.camelight.android.business.NightSceneGuideInteraction;
+import com.camelight.android.model.BackLightCacheBean;
 import com.camelight.android.model.CalculateDistanceCacheBean;
 import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
@@ -94,6 +96,8 @@ public class CameraActivity extends FragmentActivity {
 				dialog.setSingleText(getResources().getString(R.string.i_know));
 				dialog.show(CameraActivity.this);
 			} else if(msg.what == BusinessState.FRONT_LIGHT_GUIDE_CANCEL) {
+				showControlBar();
+			} else if(msg.what == BusinessState.BACK_LIGHT_GUIDE_CLOSE) {
 				showControlBar();
 			}
 		}
@@ -189,9 +193,6 @@ public class CameraActivity extends FragmentActivity {
         Handler handler = new Handler();
         interactor_ = new Interactor(handler);
         
-        confirmModeFragment = ConfirmModeFragment.createInstance(detectModeCacheBean_);
-        confirmModeFragment.setOnFinish(onConfirmModeFinish_);
-        
         btnGuide_.setOnClickListener(onStartGuideListener);
         btnCapture_.setOnClickListener(new OnClickListener() {		
 			@Override
@@ -243,7 +244,7 @@ public class CameraActivity extends FragmentActivity {
 		interactor_.startInteract(300);
     }
     
-    public void startFrontLightGuide(){
+    public void startFrontLightGuide() {
     	DetectDegreeCacheBean bean = new DetectDegreeCacheBean();
     	bean.camera_ = camera_;
     	bean.context_ = this;
@@ -254,6 +255,16 @@ public class CameraActivity extends FragmentActivity {
     	interactor_.startInteract(30);
     }
     
+    private void startBackLightGuide() {
+    	BackLightCacheBean bean = new BackLightCacheBean();
+    	bean.context_ = this;
+    	bean.camera_ = camera_;
+    	bean.layout_ = cameraLayout_;
+    	interactor_.setParam(bean);
+    	BackLightInteraction back_light = new BackLightInteraction();
+    	interactor_.setInteraction(back_light);
+    	interactor_.startInteract(100);
+    }
     
     private void startNightSceneGuide() {
 		CalculateDistanceCacheBean bean = new CalculateDistanceCacheBean();
@@ -269,10 +280,11 @@ public class CameraActivity extends FragmentActivity {
     
     public void startGuide(BusinessMode mode) {
     	switch(mode) {
-    	case BACKLIGHT:
-    		break;
     	case FRONTLIGHT:
     		startFrontLightGuide();
+    		break;
+    	case BACKLIGHT:
+    		startBackLightGuide();
     		break;
     	case NIGHT:
     		startNightSceneGuide();
@@ -282,9 +294,10 @@ public class CameraActivity extends FragmentActivity {
     }
     
     public void confirmMode(){
-    	ConfirmModeFragment fragment = confirmModeFragment;
+        confirmModeFragment = ConfirmModeFragment.createInstance(detectModeCacheBean_);
+        confirmModeFragment.setOnFinish(onConfirmModeFinish_);
     	FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-    	ft.add(android.R.id.content, fragment, ConfirmModeFragment.TAG);
+    	ft.add(android.R.id.content, confirmModeFragment, ConfirmModeFragment.TAG);
     	ft.addToBackStack(ConfirmModeFragment.TAG);
     	ft.setCustomAnimations(FragmentTransaction.TRANSIT_FRAGMENT_FADE, FragmentTransaction.TRANSIT_FRAGMENT_FADE);
     	ft.commit();
@@ -321,7 +334,7 @@ public class CameraActivity extends FragmentActivity {
 				controlBar_.setVisibility(View.GONE);
 			}
 		});
-    	anim.setDuration(1000);
+    	anim.setDuration(700);
     	controlBar_.startAnimation(anim);
     }
     public void showControlBar() {
@@ -330,7 +343,7 @@ public class CameraActivity extends FragmentActivity {
     			Animation.RELATIVE_TO_SELF, 0.f,
     			Animation.RELATIVE_TO_SELF, 1.f,
     			Animation.RELATIVE_TO_SELF, 0.f);
-    	anim.setDuration(1000);
+    	anim.setDuration(700);
     	controlBar_.setVisibility(View.VISIBLE);
     	controlBar_.startAnimation(anim);
     }

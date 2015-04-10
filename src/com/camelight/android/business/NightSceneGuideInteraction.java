@@ -12,11 +12,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CalculateDistanceCacheBean;
 import com.camelight.android.model.CameraFrame;
+import com.camelight.android.util.DeviceUtil;
 import com.camelight.android.util.ImageProcessor;
 import com.camelight.android.view.CameraActivity;
 import com.camelight.android.view.util.PropertyAnimation;
@@ -30,62 +32,107 @@ public class NightSceneGuideInteraction extends Interaction{
 	private Thread calculateDistanceThread_ = null;
 	private Handler msgHandler_ = null;
 	private PropertyAnimator animator_ = new PropertyAnimator();
-	private PropertyAnimation distanceAnimation_ = new PropertyAnimation() {
-		private final float SPEED = 0.008f/** pixels per millsec */;
-
+	
+	private class DistanceAnimation extends PropertyAnimation {
+		private final float MaxDistance = 2.3f;
+		private final float MinDistance = 1.8f;
+		private final float StandardDistance = 2.0f;
+		
 		private View distanceView_ = null;
-		private View circleView_ = null;
+		private View standardCircle_ = null;
+		private View approachingCircle_ = null;
 		private Rect facerRect = null;
 		private PointF circleCenter = null;
 		private float targetCircleRadius = 0;
 		private float currentCircleRadius = 0;
+		private int screenWidth_ = 0;
+		
+		private final int ChangeDuration = 1000;
+		
+		private int curDuration_ = 0;
+		private int startRadius_ = 0;
+		private int dstRadius_ = 0;
+		
+		//yw_sun debug
+		private TextView distanceText_ = null;
+		//=============
+
 		/*
-		 * Here we map 130 degrees to 400dps.
-		 * 5	degrees=> 25dps;
-		 * 130	degrees=> 400dps;
+		 * Let the screen width to be w.Set the approaching circle's size to be:
+		 *    max: 0.8*n <= MAX_DISTANCE
+		 *    min: 0.2*n <= MIN_DISTANCE
+		 *    fit: 0.4*n (size of standard circle) <= STANDARD_DISTANCE
 		 * */
+		private int getRadiusByDistance(float distance) {
+			int radius = 0;
+			distance = Math.min(distance, MaxDistance);
+			distance = Math.max(distance, MinDistance);
+			if(distance > StandardDistance) {
+				radius = (int)( 0.4*screenWidth_ * (1+(distance - StandardDistance)/(MaxDistance - StandardDistance)) );
+			} else {
+				radius = (int)( 0.2*screenWidth_ * (1+(StandardDistance - distance)/(StandardDistance - MinDistance)) );
+			}
+			return radius;
+		}
+		
+		private void setDstCircle(int radius, Rect face) {
+			ViewGroup.LayoutParams lp = approachingCircle_.getLayoutParams();
+			if(lp == null) {
+				return ;
+			}
+			startRadius_ = lp.width;
+			dstRadius_ = radius;
+			curDuration_ = 0;
+		}
+		
+		private void updateCircle(long tween) {
+			ViewGroup.LayoutParams lp = approachingCircle_.getLayoutParams();
+			if(lp == null) {
+				return ;
+			}
+			int cur_radius = (int)(startRadius_ + (dstRadius_-startRadius_)*Math.min(1.f, curDuration_/ChangeDuration));
+			lp.width = cur_radius;
+			approachingCircle_.setLayoutParams(lp);
+			curDuration_ += tween;
+		}
+		
 		@Override
 		public boolean update(long tweenMillsec) {
-			if (distance_ != 0 && !Float.isNaN(distance_)) {
-				FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)circleView_.getLayoutParams();
+			if (distance_ != 0 ) {
+				if(Float.isNaN(distance_)) {
+					distance_ = MaxDistance;
+				}
+				FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)approachingCircle_.getLayoutParams();
 				if (params == null) {
 					return false;
 				}
-				facerRect = cacheBean_.getFaceRect();
-				circleCenter = new PointF();
-				//note that faceRect.width = faceRect.height
-				circleCenter.x = (facerRect.left + facerRect.right)/2;
-				circleCenter.y = (facerRect.top + facerRect.bottom)/2;
-				targetCircleRadius = circleCenter.x - facerRect.left;
-				//yw_sun debug
-				CameraFrame frame = cacheBean_.camera_.getLatestFrame();
-				byte data[] = frame.getJPEGData();
-				Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
-				bm = ImageProcessor.rotate(bm, frame.getRotation());
-				((CameraActivity)(cacheBean_.context_)).updatePreview(Bitmap.createBitmap(bm,
-						facerRect.left, facerRect.top, facerRect.width(), facerRect.height()));
-				float A = 50;
-				currentCircleRadius = targetCircleRadius + distance_ * A;
-				//¶¨Î»Ô²ÐÄ
-				int left = (int)(circleCenter.x - currentCircleRadius);
-				int top = (int)(circleCenter.y - currentCircleRadius);
-				params.width = (int)currentCircleRadius*2;
-				params.height = (int)currentCircleRadius*2;
-				params.setMargins(left, top, 0, 0);
-				circleView_.setLayoutParams(params);
+				int radius = getRadiusByDistance(distance_);
+				if(Math.abs(radius - dstRadius_) > 5) {
+					setDstCircle(radius, cacheBean_.faceRect_);
+				}
+				updateCircle(tweenMillsec);
+				distanceText_.setText("distance:"+distance_+"\nradius:"+radius);
 			}
 			return true;
 		}
 		
 		@Override
 		public boolean start() {
+			screenWidth_ = (int)(DeviceUtil.getScreenSize(cacheBean_.context_)[0]);
 			CameraActivity act = (CameraActivity) cacheBean_.context_;
 			LayoutInflater inflater = (LayoutInflater)act.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			distanceView_ = inflater.inflate(R.layout.night_scene_show_distance_layout, null);
-			circleView_ = distanceView_.findViewById(R.id.circle_view);
-
+			standardCircle_ = distanceView_.findViewById(R.id.standard_circle);
+			approachingCircle_ = distanceView_.findViewById(R.id.approaching_circle);
+			/** adjust size of standard circle*/
+			ViewGroup.LayoutParams lp = standardCircle_.getLayoutParams();
+			if(lp != null) {
+				lp.width = (int)(0.4 * screenWidth_);
+			}
 			/** add the view to the outer frame layout*/
 			cacheBean_.layout_.addView(distanceView_);
+			
+			distanceText_ = (TextView)distanceView_.findViewById(R.id.distance_text);
 			return true;
 		}
 		
@@ -93,7 +140,9 @@ public class NightSceneGuideInteraction extends Interaction{
 		public void finish() {
 			cacheBean_.layout_.removeView(distanceView_);
 		}
-	};
+	}
+	
+	private DistanceAnimation distanceAnimation_ = new DistanceAnimation();
 	
 	@Override
 	public boolean onInteractStart(CacheBean param) {
