@@ -26,7 +26,7 @@ import com.camelight.android.view.util.PropertyAnimator;
 
 public class NightSceneGuideInteraction extends Interaction{
 	public CalculateDistanceCacheBean cacheBean_ = new CalculateDistanceCacheBean();
-	public float distance_ = 0;
+	public float drawWidth_ = 0;
 	
 	private Interactor calculateDistanceInteractor_ = null;
 	private Thread calculateDistanceThread_ = null;
@@ -41,10 +41,6 @@ public class NightSceneGuideInteraction extends Interaction{
 		private View distanceView_ = null;
 		private View standardCircle_ = null;
 		private View approachingCircle_ = null;
-		private Rect facerRect = null;
-		private PointF circleCenter = null;
-		private float targetCircleRadius = 0;
-		private float currentCircleRadius = 0;
 		private int screenWidth_ = 0;
 		
 		private final int ChangeDuration = 1000;
@@ -98,20 +94,20 @@ public class NightSceneGuideInteraction extends Interaction{
 		
 		@Override
 		public boolean update(long tweenMillsec) {
-			if (distance_ != 0 ) {
-				if(Float.isNaN(distance_)) {
-					distance_ = MaxDistance;
+			if (drawWidth_ != 0 ) {
+				if(Float.isNaN(drawWidth_)) {
+					drawWidth_ = MaxDistance;
 				}
 				FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)approachingCircle_.getLayoutParams();
 				if (params == null) {
 					return false;
 				}
-				int radius = getRadiusByDistance(distance_);
+				int radius = getRadiusByDistance(drawWidth_);
 				if(Math.abs(radius - dstRadius_) > 5) {
 					setDstCircle(radius, cacheBean_.faceRect_);
 				}
 				updateCircle(tweenMillsec);
-				distanceText_.setText("distance:"+distance_+"\nradius:"+radius);
+				distanceText_.setText("distance:"+drawWidth_+"\nradius:"+radius);
 			}
 			return true;
 		}
@@ -194,7 +190,7 @@ public class NightSceneGuideInteraction extends Interaction{
 		msgHandler_ = new Handler(){
 			@Override
 			public void handleMessage(Message msg) {
-				distance_ = cacheBean_.getDistance();
+				drawWidth_ = cacheBean_.getDrawWidth();
 			}
 		};
 

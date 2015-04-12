@@ -18,9 +18,8 @@ extern "C" {
  * Class:     com_camelight_android_util_FrameProcessor
  * Method:    nativeSayHello
  * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_com_camelight_android_util_FrameProcessor_nativeSayHello
-  (JNIEnv * env, jclass cls){
+ */JNIEXPORT jstring JNICALL Java_com_camelight_android_util_FrameProcessor_nativeSayHello(
+		JNIEnv * env, jclass cls) {
 	return (env)->NewStringUTF("Hello from native code!");
 }
 
@@ -28,28 +27,24 @@ JNIEXPORT jstring JNICALL Java_com_camelight_android_util_FrameProcessor_nativeS
  * Class:     com_camelight_android_util_FrameProcessor
  * Method:    nativeEnhanceImage
  * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_com_camelight_android_util_FrameProcessor_nativeEnhanceImage
-  (JNIEnv * env, jclass cls, jlong addRgba){
+ */JNIEXPORT void JNICALL Java_com_camelight_android_util_FrameProcessor_nativeEnhanceImage(
+		JNIEnv * env, jclass cls, jlong addRgba) {
 	Mat* mRgb = (Mat*) addRgba;
 
-	double 	alpha 	= 2;/**< Simple contrast control */
-	int		beta	= 50;/**< Simple brightness control */
+	double alpha = 2;/**< Simple contrast control */
+	int beta = 50;/**< Simple brightness control */
 
 	/**
 	 * TODO: way to improve the speed: crop a sub image centered around the image center.
 	 * */
-	 for (int y = 0; y < mRgb->rows; ++y)
-	 {
-		for (int x = 0; x < mRgb->cols; ++x)
-		{
-			for (int c = 0; c < 3; ++c)
-			{
-				mRgb->at<Vec3b>(y,x)[c] =
-				saturate_cast<uchar>( alpha*( mRgb->at<Vec3b>(y,x))[c] + beta );
+	for (int y = 0; y < mRgb->rows; ++y) {
+		for (int x = 0; x < mRgb->cols; ++x) {
+			for (int c = 0; c < 3; ++c) {
+				mRgb->at<Vec3b>(y, x)[c] = saturate_cast<uchar>(
+						alpha * (mRgb->at<Vec3b>(y, x))[c] + beta);
 			}
 		}
-	 }
+	}
 }
 
 /*
@@ -57,8 +52,7 @@ JNIEXPORT void JNICALL Java_com_camelight_android_util_FrameProcessor_nativeEnha
  * Method:    nativeAnalyzeMode
  * @return: default: front-lit=1; back-lit=2; night-scene=3;
  * Signature: (JIIII)I
- */
-JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeAnalyzeMode(
+ */JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeAnalyzeMode(
 		JNIEnv * env, jclass cls, jlong addGray, jint x, jint y, jint width,
 		jint height) {
 	Mat mGray = *(Mat*) addGray;
@@ -127,24 +121,23 @@ JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeAnal
 	}
 
 	if (blockDeviation < thresholdBacklit && bgdAvg < thresholdDark) {
-		return (jint)3;
+		return (jint) 3;
 	}
 
-	return (jint)1;
+	return (jint) 1;
 }
 
 /*
  * Class:     com_camelight_android_util_FrameProcessor
  * Method:    nativeCalculateLightCoordinate
  * Signature: (J)I
- */
-JNIEXPORT jboolean JNICALL Java_com_camelight_android_util_FrameProcessor_nativeGetIlluminationMap
-  (JNIEnv * env, jclass cls, jlong addGray){
+ */JNIEXPORT jboolean JNICALL Java_com_camelight_android_util_FrameProcessor_nativeGetIlluminationMap(
+		JNIEnv * env, jclass cls, jlong addGray) {
 	Mat mGray = *(Mat*) addGray;
-	if(mGray.empty() || mGray.data == NULL)
+	if (mGray.empty() || mGray.data == NULL)
 		return false;
 	vector<Mat> planes;
-	split(mGray,planes);
+	split(mGray, planes);
 
 	Mat dctImg = nativeDCTFunction(planes[0]);
 	Mat coor = Zigzag(mGray);
@@ -160,10 +153,11 @@ JNIEXPORT jboolean JNICALL Java_com_camelight_android_util_FrameProcessor_native
 	threshold(dst, dst, thd, 255, CV_THRESH_BINARY);
 
 	/* erosion & dialation: */
-	Mat myModel = getStructuringElement(CV_SHAPE_ELLIPSE,Size(11,11),Point(-1,-1));
-	dilate(dst,dst,myModel);
+	Mat myModel = getStructuringElement(CV_SHAPE_ELLIPSE, Size(11, 11),
+			Point(-1, -1));
+	dilate(dst, dst, myModel);
 
-	ConvertMatToAddr(dst, *(Mat*)addGray);
+	ConvertMatToAddr(dst, *(Mat*) addGray);
 	return true;
 }
 
@@ -171,31 +165,106 @@ JNIEXPORT jboolean JNICALL Java_com_camelight_android_util_FrameProcessor_native
  * Class:     com_camelight_android_util_FrameProcessor
  * Method:    nativeCalculateBestDistance
  * Signature: (J)F
- */
-JNIEXPORT jfloat JNICALL Java_com_camelight_android_util_FrameProcessor_nativeCalculateBestDistance
-  (JNIEnv *env, jclass cls, jlong addGray) {
-  	Mat mGray = *(Mat*)addGray;
-  	int faceMeanValue = getFaceMeanValue(mGray);
+ */JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeCalculateBestDistance(
+		JNIEnv *env, jclass cls, jlong addGray, jint size, jint ISO ) {
+	Mat mGray = *(Mat*) addGray;
 
-  	double a = 30.82;
-  	double b = -173.39;
-	double c = 253.15;
-	double distance = 0.0;
+//	int ISO = 400;
+	double a, b, c;
+	int k = 0;
+	double base200 = 60;
+	double base400 = 80;
+	double base800 = 100;
+	double criticalValue;
+	double distance = -10; // minus value means backwards;
 
-	distance = (-b-sqrt(b*b-4*a*(c+faceMeanValue-128)))/(2*a);
+	bool flag = false;
+	int faceMeanValue = getFaceMeanValue(mGray);
+	/* provide three ISO options: */
+	if (ISO == 200) {
+		a = 6.8;
+		b = 71.8;
+		c = base200 + 154.2;
+		k = 5;
+		criticalValue = -65 + c;
+		flag = (criticalValue > 128) ? true : false; //128 on the right is true;
+		if (faceMeanValue > criticalValue) {
+			double d1;
 
-	return (jfloat)distance;
+			if (flag) {
+				double d2 = (-b + sqrt(b * b - 4 * a * (c - 128))) / (2 * a) - 1;
+				d1 = (faceMeanValue - criticalValue) / k;
+				distance = -abs(d1 + d2); //backward;
+			} else {
+				d1 = (faceMeanValue - 128) / k;
+				distance = -d1;
+			}
+		} else //(faceMeanValue > criticalValue)
+		{
+			double d1 = (-b + sqrt(b * b - 4 * a * (c - faceMeanValue))) / (2 * a);
+
+			if (flag) {
+				double d2 = (-b + sqrt(b * b - 4 * a * (c - 128))) / (2 * a);
+				distance = d1 - d2;
+			} else {
+				double d2 = (128 - criticalValue) / k;
+				d1 -= 1;
+				distance = abs(d1 + d2); //forward;
+			}
+		}
+	} else if (ISO == 400) {
+		a = 4.6;
+		b = 49.5;
+		c = base400 + 137.1;
+		k = 16;
+		criticalValue = -78.9 + c;
+		flag = (criticalValue > 128) ? true : false; //128 on the right is true;
+		if (faceMeanValue > criticalValue) {
+			double d1;
+
+			if (flag) {
+				double d2 = (-b + sqrt(b * b - 4 * a * (c - 128))) / (2 * a) - 1.5;
+				d1 = (faceMeanValue - criticalValue) / k;
+				distance = -abs(d1 + d2); //backward;
+			} else {
+				d1 = (faceMeanValue - 128) / k;
+				distance = -d1;
+			}
+		} else //(faceMeanValue > criticalValue)
+		{
+			double d1 = (-b + sqrt(b * b - 4 * a * (c - faceMeanValue))) / (2 * a);
+
+			if (flag) {
+				double d2 = (-b + sqrt(b * b - 4 * a * (c - 128))) / (2 * a);
+				distance = d1 - d2;
+			} else {
+				double d2 = (128 - criticalValue) / k;
+				d1 -= 1.5;
+				distance = abs(d1 + d2); //forward;
+			}
+		}
+	} else if (ISO == 800) //not available currently;
+			{
+				distance = 0;
+	} else {
+		distance = -10;
+	}
+
+	/* determine the showing rectangle: */
+	k = 116;
+	double r1 = (size + 0.0) / (mGray.cols*mGray.rows + 0.0);
+	double r2 = r1 + distance * k;
+	int width = (int)sqrt(size / r2);
+	return width;
 }
 
 /*
  * Class:     com_camelight_android_util_FrameProcessor
  * Method:    nativeDetectFace
  * Signature: (J)Lorg/opencv/core/Rect;
- */
-JNIEXPORT void JNICALL Java_com_camelight_android_util_FaceExtractor_nativeDetectFaces
-(JNIEnv * jenv, jclass, jlong thiz, jlong imageGray, jlong faces){
+ */JNIEXPORT void JNICALL Java_com_camelight_android_util_FaceExtractor_nativeDetectFaces(
+		JNIEnv * jenv, jclass, jlong thiz, jlong imageGray, jlong faces) {
 }
-
 
 #ifdef __cplusplus
 }

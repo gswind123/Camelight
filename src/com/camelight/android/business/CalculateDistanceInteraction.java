@@ -20,7 +20,7 @@ public class CalculateDistanceInteraction extends Interaction{
 	public CalculateDistanceCacheBean cacheBean_ = new CalculateDistanceCacheBean();
 	
 	private long lastTime_ = 0;
-	private float distance = 0;
+	private float drawWidth = 0;
 	
 	@Override
 	public boolean onInteractStart(CacheBean param) {
@@ -52,11 +52,11 @@ public class CalculateDistanceInteraction extends Interaction{
 			bean.setFaceRect(rect);
 			Mat rgba = ImageProcessor.bitmap2Mat(bm);
 			Mat face_mat = new Mat(rgba, cv_rect);
-			distance = FrameProcessor.CalculateBestDistance(face_mat.nativeObj);
-			bean.setDistance(distance);
+			drawWidth = FrameProcessor.CalculateBestDistance(face_mat.nativeObj, rgba.width()*rgba.height(),400);
+			bean.setDrawWidth(drawWidth);
 			bean.curFrame_ = frame;
 		} else {
-			bean.setDistance(0);
+			bean.setDrawWidth(0);
 		}
 		Message msg = new Message();
 		long cur_time = System.currentTimeMillis();

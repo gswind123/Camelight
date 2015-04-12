@@ -8,7 +8,7 @@ import com.camelight.android.business.NightSceneGuideInteraction;
 import com.camelight.android.view.util.CameraView;
 
 public class CalculateDistanceCacheBean extends CacheBean{
-	private float distance_ = 0;
+	private float drawWidth_ = 0;
 	private Object lock = new Object();
 	
 	public CameraView camera_ = null;
@@ -19,23 +19,23 @@ public class CalculateDistanceCacheBean extends CacheBean{
 	
 	public Rect faceRect_ = new Rect();
 	
-	public void setDistance(float distance){
+	public void setDrawWidth(float drawWidth){
 		synchronized (lock) {
-			if(distance == 0) {
-				distance_ = 0;
+			if(drawWidth == 0) {
+				drawWidth_ = 0;
 			} else {
-				distance_ = distance;
+				drawWidth_ = drawWidth;
 			}
 		}
 	}
 	
-	public float getDistance(){
-		if(distance_ == 0) {
+	public float getDrawWidth(){
+		if(drawWidth_ == 0) {
 			return 0;
 		}
 		float res = 0;
 		synchronized(lock){
-			res = distance_;
+			res = drawWidth_;
 		}
 		return res;
 	}

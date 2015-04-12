@@ -74,12 +74,11 @@ public class FrameProcessor {
 	}
 
 	/**
-	 * @return distance between the current location and the optimal location, 
-	 * 			which is how far you need to move
+	 * @return current rectangle to draw;
 	 */
-	static public float CalculateBestDistance(long add) {
-		float bestDistance = nativeCalculateBestDistance(add);
-		return bestDistance;
+	static public int CalculateBestDistance(long add, int size, int ISO) {
+		int width = nativeCalculateBestDistance(add, size, ISO);
+		return width;
 	}
 	
 	/**
@@ -144,9 +143,8 @@ public class FrameProcessor {
 	
 	/**
 	 * @param add pointing to face map;
-	 * @return distance between the current location and the optimal location, 
-	 * 			which is how far you need to move
+	 * @return current rectangle to draw
 	 */
-	native public static float nativeCalculateBestDistance(long add);
+	native public static int nativeCalculateBestDistance(long add, int size, int ISO);
 	
 }
