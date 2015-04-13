@@ -99,6 +99,15 @@ public class CameraActivity extends FragmentActivity {
 				showControlBar();
 			} else if(msg.what == BusinessState.BACK_LIGHT_GUIDE_CLOSE) {
 				showControlBar();
+			} else if(msg.what == BusinessState.NIGHT_SCENE_GUIDE_CANCEL) {
+				showControlBar();
+			} else if(msg.what == BusinessState.NIGHT_SCENE_GUIDE_FINISH) {
+				showControlBar();
+				CameDialog dialog = new CameDialog();
+				dialog.setDialogType(CameDialog.SINGLE_DIALOG);
+				dialog.setDialogContent(getResources().getString(R.string.alert_night_scene_guide_finish));
+				dialog.setSingleText(getResources().getString(R.string.i_know));
+				dialog.show(CameraActivity.this);
 			}
 		}
 	};

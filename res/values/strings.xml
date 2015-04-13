@@ -39,4 +39,7 @@
     <string name="take_photo">拍照</string>
     <string name="desc_auto_focus_on_face">自动聚焦在脸部</string>
     
+    <string name="desc_night_scene_guide">调整拍摄者距离使两圆重合</string>
+    <string name="alert_night_scene_guide_finish">引导结束，当前位置适合夜景拍摄</string>
+    
 </resources>

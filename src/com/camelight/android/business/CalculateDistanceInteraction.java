@@ -55,8 +55,9 @@ public class CalculateDistanceInteraction extends Interaction{
 			drawWidth = FrameProcessor.CalculateBestDistance(face_mat.nativeObj, rgba.width()*rgba.height(),400);
 			bean.setDrawWidth(drawWidth);
 			bean.curFrame_ = frame;
+			bean.faceRect_ = rect;
 		} else {
-			bean.setDrawWidth(0);
+			bean.setDrawWidth(-1);
 		}
 		Message msg = new Message();
 		long cur_time = System.currentTimeMillis();

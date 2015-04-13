@@ -143,7 +143,7 @@ public class FrameProcessor {
 	
 	/**
 	 * @param add pointing to face map;
-	 * @return current rectangle to draw
+	 * @return current square width to draw
 	 */
 	native public static int nativeCalculateBestDistance(long add, int size, int ISO);
 	
