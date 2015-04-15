@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.camelight.android.R;
+import com.camelight.android.business.Interaction.InteractState;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CalculateDistanceCacheBean;
 import com.camelight.android.model.CameraFrame;
@@ -40,6 +41,9 @@ public class NightSceneGuideInteraction extends Interaction{
 	
 	private boolean isGuideCanceled_ = false;
 	private boolean isPausing_ = false;
+	
+	private final int autoFocusFrameThreshold_ = 30;
+	private int autoFocusFrameCnt_ = 0;
 	
 	private OnClickListener onCancelClickListener = new OnClickListener() {	
 		@Override
@@ -69,6 +73,24 @@ public class NightSceneGuideInteraction extends Interaction{
 				}
 			});
 			dialog.show((FragmentActivity)(cacheBean_.context_));
+		}
+	};
+	
+	private OnClickListener onTakePhotoListener_ = new OnClickListener() {	
+		@Override
+		public void onClick(View v) {
+			if(InteractionUtil.isDoubleClick()) {
+				return ;
+			}
+			cacheBean_.camera_.setFlashLight(true);
+			cacheBean_.camera_.takePicture();
+			Handler handler = new Handler();
+			handler.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					cacheBean_.camera_.setFlashLight(false);
+				}
+			}, 1000);
 		}
 	};
 	
@@ -208,6 +230,8 @@ public class NightSceneGuideInteraction extends Interaction{
 			guideText_ = (TextView)distanceView_.findViewById(R.id.guide_text);
 			View btn_cancel = distanceView_.findViewById(R.id.btn_cancel);
 			btn_cancel.setOnClickListener(onCancelClickListener);
+			View btn_take_photo = distanceView_.findViewById(R.id.btn_take_photo);
+			btn_take_photo.setOnClickListener(onTakePhotoListener_);
 			/** add the view to the outer frame layout*/
 			cacheBean_.layout_.addView(distanceView_);
 			
@@ -245,12 +269,29 @@ public class NightSceneGuideInteraction extends Interaction{
 			return InteractState.CONTINUE;
 		}
 		animator_.update();
-		if(distanceAnimation_.isDistanceFit()) {
-			isGuideCanceled_ = false;
-			return InteractState.STOP;
-		} else {
-			return InteractState.CONTINUE;		
+		if(cacheBean_.curFrame_ != null && cacheBean_.faceRect_ != null) {
+			autoFocusFrameCnt_++;
+			if(autoFocusFrameCnt_ >= autoFocusFrameThreshold_) {
+				autoFocusFrameCnt_ = 0;
+				Rect rect = cacheBean_.faceRect_;
+				int width = cacheBean_.curFrame_.getHeight();
+				int height = cacheBean_.curFrame_.getWidth();
+				int rect_width = rect.width();
+				if(cacheBean_.curFrame_.isMirror()) {
+					rect.left = width - rect.left - rect.width();
+					rect.right = rect.left+rect_width;
+				}
+				cacheBean_.camera_.setFocusAt(rect, width, height);
+			}
 		}
+
+//		if(distanceAnimation_.isDistanceFit()) {
+//			isGuideCanceled_ = false;
+//			return InteractState.STOP;
+//		} else {
+//			return InteractState.CONTINUE;		
+//		}
+		return InteractState.CONTINUE;
 	}
 
 	@Override

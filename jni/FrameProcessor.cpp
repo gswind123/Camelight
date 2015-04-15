@@ -175,7 +175,7 @@ extern "C" {
 	double base200 = 20;
 	double base400 = 40;
 	double base800 = 60;
-	double middleGray = 100.0;
+	double middleGray = 120.0;
 
 	double criticalValue;
 	double distance = -10; // minus value means backwards;

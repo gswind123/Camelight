@@ -39,6 +39,16 @@
             style="@style/text_20_000000"
             android:text="@string/desc_search_face"/>    
         
+        <TextView 
+	        android:id="@+id/btn_take_photo"
+	        android:layout_width="180dp"
+	        android:layout_height="40dp"
+	        android:layout_marginTop="10dp"
+	        android:gravity="center"
+	        style="@style/text_20_000000"
+	        android:background="@drawable/btn_close_guide_selector"
+	        android:text="@string/take_photo"/>  
+        
     	<TextView 
 	        android:id="@+id/btn_cancel"
 	        android:layout_width="180dp"

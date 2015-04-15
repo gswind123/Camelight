@@ -44,6 +44,7 @@ public class CalculateDistanceInteraction extends Interaction{
 		FaceExtractor detector = new FaceExtractor(bm);
 		detector.detectFaces();
 		Face faces[] = detector.getFaces();
+		bean.curFrame_ = frame;
 		if(faces != null) {
 			/*TODO:添加优化的人脸选择*/
 			Face face = faces[0];
@@ -54,7 +55,6 @@ public class CalculateDistanceInteraction extends Interaction{
 			Mat face_mat = new Mat(rgba, cv_rect);
 			drawWidth = FrameProcessor.CalculateBestDistance(face_mat.nativeObj, rgba.width()*rgba.height(),400);
 			bean.setDrawWidth(drawWidth);
-			bean.curFrame_ = frame;
 			bean.faceRect_ = rect;
 		} else {
 			bean.setDrawWidth(-1);

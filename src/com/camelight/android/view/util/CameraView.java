@@ -258,7 +258,10 @@ public class CameraView extends SurfaceView
 	 * */
 	@SuppressLint("NewApi") 
 	public void setFocusAt(Rect area, int width, int height) {
-		if(camera_ == null || latestFrame_ == null) {
+		if(area == null || camera_ == null || latestFrame_ == null) {
+			return ;
+		}
+		if(area.width() == 0 || area.height() == 0) {
 			return ;
 		}
 		//Map (x,y) to coordination in [-1000, 1000]
@@ -280,5 +283,18 @@ public class CameraView extends SurfaceView
 		param.setFocusAreas(focus_areas);
 		camera_.setParameters(param);
 		camera_.autoFocus(null);
+	}
+	
+	/** 
+	 * @param: open: true to open flash light; otherwise close
+	 */
+	public void setFlashLight(boolean open) {
+	    String mode = open?Parameters.FLASH_MODE_TORCH:Parameters.FLASH_MODE_OFF;
+	    if(mode == null || camera_ == null) {
+	    	return ;
+	    }
+		Parameters param = camera_.getParameters();
+		param.setFlashMode(mode);
+		camera_.setParameters(param);
 	}
 }

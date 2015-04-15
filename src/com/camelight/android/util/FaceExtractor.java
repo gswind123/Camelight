@@ -40,7 +40,7 @@ public class FaceExtractor {
 		faceDetector.findFaces(src_, faces_);
 		ArrayList<Face> face_ary = new ArrayList<FaceDetector.Face>();
 		for(Face f:faces_) {
-			if(f != null){
+			if(f != null && f.eyesDistance() > 0.1){
 				face_ary.add(f);
 			}
 		}
