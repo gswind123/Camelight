@@ -166,15 +166,17 @@ extern "C" {
  * Method:    nativeCalculateBestDistance
  * Signature: (J)F
  */JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeCalculateBestDistance(
-		JNIEnv *env, jclass cls, jlong addGray, jint size, jint ISO ) {
+		JNIEnv *env, jclass cls, jlong addGray, jint size, jint ISO) {
 	Mat mGray = *(Mat*) addGray;
 
 //	int ISO = 400;
 	double a, b, c;
 	int k = 0;
-	double base200 = 60;
-	double base400 = 80;
-	double base800 = 100;
+	double base200 = 20;
+	double base400 = 40;
+	double base800 = 60;
+	double middleGray = 100.0;
+
 	double criticalValue;
 	double distance = -10; // minus value means backwards;
 
@@ -187,27 +189,30 @@ extern "C" {
 		c = base200 + 154.2;
 		k = 5;
 		criticalValue = -65 + c;
-		flag = (criticalValue > 128) ? true : false; //128 on the right is true;
+		flag = (criticalValue > middleGray) ? true : false; //middleGray on the right is true;
 		if (faceMeanValue > criticalValue) {
 			double d1;
 
 			if (flag) {
-				double d2 = (-b + sqrt(b * b - 4 * a * (c - 128))) / (2 * a) - 1;
+				double d2 = (-b + sqrt(b * b - 4 * a * (c - middleGray)))
+						/ (2 * a) - 1;
 				d1 = (faceMeanValue - criticalValue) / k;
 				distance = -abs(d1 + d2); //backward;
 			} else {
-				d1 = (faceMeanValue - 128) / k;
+				d1 = (faceMeanValue - middleGray) / k;
 				distance = -d1;
 			}
 		} else //(faceMeanValue > criticalValue)
 		{
-			double d1 = (-b + sqrt(b * b - 4 * a * (c - faceMeanValue))) / (2 * a);
+			double d1 = (-b + sqrt(b * b - 4 * a * (c - faceMeanValue)))
+					/ (2 * a);
 
 			if (flag) {
-				double d2 = (-b + sqrt(b * b - 4 * a * (c - 128))) / (2 * a);
+				double d2 = (-b + sqrt(b * b - 4 * a * (c - middleGray)))
+						/ (2 * a);
 				distance = d1 - d2;
 			} else {
-				double d2 = (128 - criticalValue) / k;
+				double d2 = (middleGray - criticalValue) / k;
 				d1 -= 1;
 				distance = abs(d1 + d2); //forward;
 			}
@@ -218,43 +223,46 @@ extern "C" {
 		c = base400 + 137.1;
 		k = 16;
 		criticalValue = -78.9 + c;
-		flag = (criticalValue > 128) ? true : false; //128 on the right is true;
+		flag = (criticalValue > middleGray) ? true : false; //middleGray on the right is true;
 		if (faceMeanValue > criticalValue) {
 			double d1;
 
 			if (flag) {
-				double d2 = (-b + sqrt(b * b - 4 * a * (c - 128))) / (2 * a) - 1.5;
+				double d2 = (-b + sqrt(b * b - 4 * a * (c - middleGray)))
+						/ (2 * a) - 1.5;
 				d1 = (faceMeanValue - criticalValue) / k;
 				distance = -abs(d1 + d2); //backward;
 			} else {
-				d1 = (faceMeanValue - 128) / k;
+				d1 = (faceMeanValue - middleGray) / k;
 				distance = -d1;
 			}
 		} else //(faceMeanValue > criticalValue)
 		{
-			double d1 = (-b + sqrt(b * b - 4 * a * (c - faceMeanValue))) / (2 * a);
+			double d1 = (-b + sqrt(b * b - 4 * a * (c - faceMeanValue)))
+					/ (2 * a);
 
 			if (flag) {
-				double d2 = (-b + sqrt(b * b - 4 * a * (c - 128))) / (2 * a);
+				double d2 = (-b + sqrt(b * b - 4 * a * (c - middleGray)))
+						/ (2 * a);
 				distance = d1 - d2;
 			} else {
-				double d2 = (128 - criticalValue) / k;
+				double d2 = (middleGray - criticalValue) / k;
 				d1 -= 1.5;
 				distance = abs(d1 + d2); //forward;
 			}
 		}
 	} else if (ISO == 800) //not available currently;
 			{
-				distance = 0;
+		distance = 0;
 	} else {
 		distance = -10;
 	}
 
 	/* determine the showing rectangle: */
 	k = 116;
-	double r1 = (size + 0.0) / (mGray.cols*mGray.rows + 0.0);
-	double r2 = r1 + distance * k;
-	int width = (int)sqrt(size / r2);
+	double r1 = (size + 0.0) / (mGray.cols * mGray.rows + 0.0);
+	double r2 = abs(r1 + distance * k);
+	int width = (int) sqrt(size / r2);
 	return width;
 }
 
