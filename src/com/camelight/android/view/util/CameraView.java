@@ -178,6 +178,19 @@ public class CameraView extends SurfaceView
 		initCamera(CAMERA_FACE_FRONT ,width, height);
 	}
 	
+	public int getCameraFacing() {
+		return cameraFacing_;
+	}
+	
+	/**
+	 * @param: format must be CAMERA_FACE_FRONT or CAMERA_FACE_BACK
+	 * */
+	public void switchCamera(int format) {
+		if(format == cameraFacing_) {
+			return ;
+		}
+		initCamera(format, viewWidth_, viewHeight_);
+	}	
 	
 	public void takePicture() {
 		camera_.setPreviewCallback(null);
@@ -230,9 +243,6 @@ public class CameraView extends SurfaceView
 		}
 	}
 	
-	/*
-	 * 默认摄像机获取的CameraFrame其数据都是-90度旋转的，请自行处理
-	 * */
 	public CameraFrame getLatestFrame(){
 		CameraFrame ret_frame = null;
 		synchronized (this) {

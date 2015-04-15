@@ -39,6 +39,7 @@ import com.camelight.android.business.Interactor;
 import com.camelight.android.business.NightSceneGuideInteraction;
 import com.camelight.android.model.BackLightCacheBean;
 import com.camelight.android.model.CalculateDistanceCacheBean;
+import com.camelight.android.model.CameraFrame;
 import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
 import com.camelight.android.util.FrameProcessor;
@@ -54,7 +55,7 @@ public class CameraActivity extends FragmentActivity {
 	private CameraView camera_;
 	private View controlBar_;
 	private ImageView btnCapture_;
-	private ImageView preView_;
+	private ImageView btnSwitchCamera_;
 	private ImageView btnGuide_;
 	private FrameLayout cameraLayout_;
 	private Interactor interactor_;
@@ -198,7 +199,7 @@ public class CameraActivity extends FragmentActivity {
         btnCapture_ = (ImageView) findViewById(R.id.btn_take_photo);
         btnGuide_ = (ImageView) findViewById(R.id.btn_start_guide);
         cameraLayout_ = (FrameLayout) findViewById(R.id.camera_frame);
-        preView_ = (ImageView)findViewById(R.id.img_preview);
+        btnSwitchCamera_ = (ImageView)findViewById(R.id.btn_switch_camera);
         Handler handler = new Handler();
         interactor_ = new Interactor(handler);
         
@@ -208,6 +209,14 @@ public class CameraActivity extends FragmentActivity {
 			public void onClick(View v) {
 				if(InteractionUtil.isDoubleClick() == false) {
 					camera_.takePicture();
+				}
+			}
+		});
+        btnSwitchCamera_.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(InteractionUtil.isDoubleClick() == false) {
+					switchCamera();
 				}
 			}
 		});
@@ -312,13 +321,15 @@ public class CameraActivity extends FragmentActivity {
     	ft.commit();
     }
     
+    //yw_sun debug
     public void updatePreview(Bitmap bitmap) {
-    	if(bitmap == null) {
-    		return ;
-    	}
-    	Bitmap bmp = Bitmap.createBitmap(bitmap);
-    	BitmapDrawable drawable = new BitmapDrawable(bmp);
-    	preView_.setBackgroundDrawable(drawable);
+    	return ;
+//    	if(bitmap == null) {
+//    		return ;
+//    	}
+//    	Bitmap bmp = Bitmap.createBitmap(bitmap);
+//    	BitmapDrawable drawable = new BitmapDrawable(bmp);
+//    	preView_.setBackgroundDrawable(drawable);
     }
     
     public void stopCurrentInteraction() {
@@ -355,5 +366,13 @@ public class CameraActivity extends FragmentActivity {
     	anim.setDuration(700);
     	controlBar_.setVisibility(View.VISIBLE);
     	controlBar_.startAnimation(anim);
+    }
+    
+    public void switchCamera() {
+    	if(camera_.getCameraFacing() == CameraView.CAMERA_FACE_BACK) {
+    		camera_.switchCamera(CameraView.CAMERA_FACE_FRONT);
+    	} else {
+    		camera_.switchCamera(CameraView.CAMERA_FACE_BACK);
+    	}
     }
 }
