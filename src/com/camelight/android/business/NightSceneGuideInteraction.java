@@ -42,7 +42,7 @@ public class NightSceneGuideInteraction extends Interaction{
 	private boolean isGuideCanceled_ = false;
 	private boolean isPausing_ = false;
 	
-	private final int autoFocusFrameThreshold_ = 30;
+	private final int autoFocusFrameThreshold_ = 100;
 	private int autoFocusFrameCnt_ = 0;
 	
 	private OnClickListener onCancelClickListener = new OnClickListener() {	

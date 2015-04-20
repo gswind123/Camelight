@@ -68,11 +68,8 @@ public class DetectDegreeInteraction extends Interaction{
 			Mat face_low_mat = new Mat(rgba, rect);
 			Mat fixed_mat = new Mat(FrameProcessor.PREDICT_HEIGHT, FrameProcessor.PREDICT_WIDTH, CvType.CV_8UC4);
 			Imgproc.resize(face_low_mat, fixed_mat, fixed_mat.size());
-			FrameProcessor.GetIlluminationMap(fixed_mat.nativeObj);
-			Bitmap face_bm = Bitmap.createBitmap(fixed_mat.cols(), fixed_mat.rows(), Config.RGB_565);
-			Utils.matToBitmap(fixed_mat, face_bm);
-			int index = (int)FrameProcessor.Predict(face_bm);
-			int angle[] = FrameProcessor.getPredictData(index);
+			float degree = FrameProcessor.GetLightDegree(fixed_mat.nativeObj);
+			int angle[] = {0, (int)degree};
 			int light_otn = (int)OrientationUtil.getOrientation();
 			if(frame.isMirror()) {
 				light_otn = (light_otn - angle[1] + 360)%360;

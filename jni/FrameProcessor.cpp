@@ -131,7 +131,7 @@ extern "C" {
  * Class:     com_camelight_android_util_FrameProcessor
  * Method:    nativeCalculateLightCoordinate
  * Signature: (J)I
- */JNIEXPORT jboolean JNICALL Java_com_camelight_android_util_FrameProcessor_nativeGetIlluminationMap(
+ */JNIEXPORT jfloat JNICALL Java_com_camelight_android_util_FrameProcessor_nativeGetLightDegree(
 		JNIEnv * env, jclass cls, jlong addGray) {
 	Mat mGray = *(Mat*) addGray;
 	if (mGray.empty() || mGray.data == NULL)
@@ -153,12 +153,33 @@ extern "C" {
 	threshold(dst, dst, thd, 255, CV_THRESH_BINARY);
 
 	/* erosion & dialation: */
-	Mat myModel = getStructuringElement(CV_SHAPE_ELLIPSE, Size(11, 11),
-			Point(-1, -1));
+	Mat myModel = getStructuringElement(CV_SHAPE_ELLIPSE, Size(11, 11),	Point(-1, -1));
 	dilate(dst, dst, myModel);
 
-	ConvertMatToAddr(dst, *(Mat*) addGray);
-	return true;
+	unsigned nLeft = 0;
+	unsigned nRight = 0;
+	for (int x = 0; x < dst.rows; x++) {
+		for (int y1 = 0, y2 = dst.cols / 2; y1 < dst.cols / 2, y2 < dst.cols;
+				y1++, y2++) {
+			if (dst.at<uchar>(x, y1) == 0) {
+				nLeft++;
+			}
+			if (dst.at<uchar>(x, y2) == 0) {
+				nRight++;
+			}
+		}
+	}
+
+	int diff = int(nLeft - nRight);
+	if (abs(diff) < dst.rows * dst.cols / 8) {
+		return getPlane(dst, dst.cols / 2);
+	} else if (diff > 0) {
+		return getPlane(dst, 0);
+	} else if (diff < 0) {
+		return getPlane(dst, dst.cols);
+	}else{
+		return 0;
+	}
 }
 
 /*
@@ -169,101 +190,75 @@ extern "C" {
 		JNIEnv *env, jclass cls, jlong addGray, jint size, jint ISO) {
 	Mat mGray = *(Mat*) addGray;
 
-//	int ISO = 400;
-	double a, b, c;
-	int k = 0;
 	double base200 = 20;
-	double base400 = 40;
+	double base400 = -110;
 	double base800 = 60;
 	double middleGray = 120.0;
+	double x[6] = {			   0.5,   1.0,   1.5,   2.0,   2.5, 3.0		};
+	double value[8] = {160.0, 152.0, 147.0, 136.0, 107.0, 92.0, 81.5, 80.0};
+	double y[7] = {0};
+		for(int i=0; i<7; i++)		y[i] = (value[i]+value[i+1])/2 + base400;
+	double ratio[6] = {8, 30.53, 82.77, 136.82, 211.03, 268.16};
+	int level = 0;
 
-	double criticalValue;
-	double distance = -10; // minus value means backwards;
-
-	bool flag = false;
 	int faceMeanValue = getFaceMeanValue(mGray);
+	int fd = middleGray - faceMeanValue;
 	/* provide three ISO options: */
 	if (ISO == 200) {
-		a = 6.8;
-		b = 71.8;
-		c = base200 + 154.2;
-		k = 5;
-		criticalValue = -65 + c;
-		flag = (criticalValue > middleGray) ? true : false; //middleGray on the right is true;
-		if (faceMeanValue > criticalValue) {
-			double d1;
 
-			if (flag) {
-				double d2 = (-b + sqrt(b * b - 4 * a * (c - middleGray)))
-						/ (2 * a) - 1;
-				d1 = (faceMeanValue - criticalValue) / k;
-				distance = -abs(d1 + d2); //backward;
-			} else {
-				d1 = (faceMeanValue - middleGray) / k;
-				distance = -d1;
-			}
-		} else //(faceMeanValue > criticalValue)
-		{
-			double d1 = (-b + sqrt(b * b - 4 * a * (c - faceMeanValue)))
-					/ (2 * a);
-
-			if (flag) {
-				double d2 = (-b + sqrt(b * b - 4 * a * (c - middleGray)))
-						/ (2 * a);
-				distance = d1 - d2;
-			} else {
-				double d2 = (middleGray - criticalValue) / k;
-				d1 -= 1;
-				distance = abs(d1 + d2); //forward;
-			}
-		}
 	} else if (ISO == 400) {
-		a = 4.6;
-		b = 49.5;
-		c = base400 + 137.1;
-		k = 16;
-		criticalValue = -78.9 + c;
-		flag = (criticalValue > middleGray) ? true : false; //middleGray on the right is true;
-		if (faceMeanValue > criticalValue) {
-			double d1;
-
-			if (flag) {
-				double d2 = (-b + sqrt(b * b - 4 * a * (c - middleGray)))
-						/ (2 * a) - 1.5;
-				d1 = (faceMeanValue - criticalValue) / k;
-				distance = -abs(d1 + d2); //backward;
-			} else {
-				d1 = (faceMeanValue - middleGray) / k;
-				distance = -d1;
-			}
-		} else //(faceMeanValue > criticalValue)
-		{
-			double d1 = (-b + sqrt(b * b - 4 * a * (c - faceMeanValue)))
-					/ (2 * a);
-
-			if (flag) {
-				double d2 = (-b + sqrt(b * b - 4 * a * (c - middleGray)))
-						/ (2 * a);
-				distance = d1 - d2;
-			} else {
-				double d2 = (middleGray - criticalValue) / k;
-				d1 -= 1.5;
-				distance = abs(d1 + d2); //forward;
-			}
+		if (fd > y[0]){
+			level = 0;
 		}
-	} else if (ISO == 800) //not available currently;
-			{
-		distance = 0;
-	} else {
-		distance = -10;
+		else if (fd <= y[0] && fd > y[1]){
+			level = 0;
+		}
+		else if (fd <= y[1] && fd > y[2]){
+			level = 1;
+		}
+		else if (fd <= y[2] && fd > y[3]){
+			level = 2;
+		}
+		else if (fd <= y[3] && fd > y[4]){
+			level = 3;
+		}
+		else if (fd <= y[4] && fd > y[5]){
+			level = 4;
+		}
+		else if (fd <= y[5] && fd > y[6]){
+			level = 5;
+		}
+		else if (fd <= y[6]){
+			level = 5;
+		}
+	} else if (ISO == 800){ //not available currently;
+		level = -1;
+	}
+	/* determine the showing rectangle: */
+	double r = 0;
+	switch(level){
+		case 0:
+			r = ratio[0];
+			break;
+		case 1:
+			r = ratio[1];
+			break;
+		case 2:
+			r = ratio[2];
+			break;
+		case 3:
+			r = ratio[3];
+			break;
+		case 4:
+			r = ratio[4];
+			break;
+		case 5:
+			r = ratio[5];
+			break;
 	}
 
-	/* determine the showing rectangle: */
-	k = 116;
-	double r1 = (size + 0.0) / (mGray.cols * mGray.rows + 0.0);
-	double r2 = abs(r1 + distance * k);
-	int width = (int) sqrt(size / r2);
-	return width;
+	int width = (int) sqrt(size / r);
+	return faceMeanValue*10;
 }
 
 /*

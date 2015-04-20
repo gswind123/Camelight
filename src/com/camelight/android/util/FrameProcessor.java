@@ -66,11 +66,12 @@ public class FrameProcessor {
 	}
 
 	/* determine the light/sun position */
-	static public void GetIlluminationMap(long add) {
-		boolean result = nativeGetIlluminationMap(add);
-		if (result) {
+	static public float GetLightDegree(long add) {
+		float result = nativeGetLightDegree(add);
+		if (result == 0) {
 			//TODO: if false;
 		}
+		return result;
 	}
 
 	/**
@@ -137,9 +138,9 @@ public class FrameProcessor {
 	
 	/**
 	 * @param add pointing to face map;
-	 * @return illumination map pointed by add.
+	 * @return light degree.
 	 */
-	native public static boolean nativeGetIlluminationMap(long add);
+	native public static float nativeGetLightDegree(long add);
 	
 	/**
 	 * @param add pointing to face map;

@@ -25,6 +25,8 @@ int getFaceMeanValue(cv::Mat &src);
 
 int Otsu(cv::Mat &src);
 
+float getPlane(cv::Mat &src, int flag);
+
 #ifdef __cplusplus
 }
 #endif

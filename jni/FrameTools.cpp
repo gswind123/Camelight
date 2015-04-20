@@ -218,6 +218,25 @@ int getFaceMeanValue(Mat &src){
 	return avg;
 }
 
+float getPlane(Mat &src, int flag)
+{
+	int aveY = 0;
+	int sqrY = 0;
+
+	for (int x = 0; x < src.rows; x++)
+	{
+		for (int y = 0; y < src.cols; y++)
+		{
+			aveY += (255-src.at<uchar>(x,y)) * (y - flag);
+			sqrY += (y - src.cols) * (y - src.cols);
+		}
+	}
+
+ 	float beta = (aveY + 0.0) / (sqrY + 0.0);
+	return beta*100;
+}
+
+
 #ifdef __cplusplus
 }
 #endif
