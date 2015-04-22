@@ -142,7 +142,7 @@ public class CameDialog extends Fragment{
 		FragmentTransaction ft = act.getSupportFragmentManager().beginTransaction();
 		ft.add(android.R.id.content, this, TAG);
 		ft.addToBackStack(TAG);
-		ft.commit();
+		ft.commitAllowingStateLoss();
 	}
 	
 	public void finish() {
