@@ -9,6 +9,15 @@
 extern "C" {
 #endif
 
+#define SIZEWIDTH 20
+#define SIZEHEIGHT 20
+#define DARK 255
+#define BRIGHT 0
+#define POTENTIAL 128
+#define TODO 0
+#define MARGIN 2
+
+
 int CalculateMeanValue(cv::Mat & mat);
 
 void Assign(cv::Mat &output,unsigned i, unsigned h, unsigned v);
@@ -26,6 +35,12 @@ int getFaceMeanValue(cv::Mat &src);
 int Otsu(cv::Mat &src);
 
 float getPlane(cv::Mat &src, int flag);
+
+cv::Mat calMeanMat(cv::Mat &src_, int &mean);
+
+int* calDerivedMat(cv::Mat &derivedMatx_, cv::Mat &derivedMaty_, cv::Mat &meanMat_);
+
+void calMaskMat(cv::Mat &maskMatx_, cv::Mat &maskMaty_, cv::Mat &derivedMatx_, cv::Mat &derivedMaty_, int threshold[]);
 
 #ifdef __cplusplus
 }

@@ -53,78 +53,49 @@ extern "C" {
  * @return: default: front-lit=1; back-lit=2; night-scene=3;
  * Signature: (JIIII)I
  */JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeAnalyzeMode(
-		JNIEnv * env, jclass cls, jlong addGray, jint x, jint y, jint width,
-		jint height) {
+		JNIEnv * env, jclass cls, jlong addGray, jint x, jint y, jint width, jint height) {
 	Mat mGray = *(Mat*) addGray;
 	/*something may be wrong with this line: */
 	Rect faceRect(x, y, width, height);
+	int mean = 0;
 
-	/* if background mean value < dark threshold, then it's dark mode */
-	int thresholdDark = 50;
-	/* if block deviation > backlit threshold, then it's backlit mode */
-	int thresholdBacklit = 130;
+	Mat meanMat_ = calMeanMat(mGray, mean);
 
-	/* step-1: calculate mean value of each block */
-	/*
-	 ___________
-	 | 1 | 2 | 3 |
-	 |___|___|___|
-	 |   | f |   |
-	 |_4_|___|_5_|
-	 |___________|
-	 */
+	Mat derivedMatx_ = Mat::zeros(SIZEWIDTH,SIZEHEIGHT,CV_32SC1);
+	Mat	derivedMaty_ = Mat::zeros(SIZEWIDTH,SIZEHEIGHT,CV_32SC1);
+	int *threshold = calDerivedMat(derivedMatx_, derivedMaty_, meanMat_);
 
-	std::vector<Point> shift;
-	shift.push_back(Point(-faceRect.width, -faceRect.height));
-	shift.push_back(Point(0, -faceRect.height));
-	shift.push_back(Point(faceRect.width, -faceRect.height));
-	shift.push_back(Point(-faceRect.width, 0));
-	shift.push_back(Point(faceRect.width, 0));
+	Mat maskMatx_ = Mat::zeros(SIZEWIDTH,SIZEHEIGHT,CV_8UC1);
+	Mat	maskMaty_ = Mat::zeros(SIZEWIDTH,SIZEHEIGHT,CV_8UC1);
 
-	/* calculate the faceRect mean value */
-	Rect surroundingRect;
-	Mat surroundingMat;
-	Rect mask = Rect(0, 0, mGray.cols, mGray.rows); //in case out of border;
-	int meanValue[6] = { 0 };
+	calMaskMat(maskMatx_, maskMaty_, derivedMatx_, derivedMaty_, threshold);
 
-	for (unsigned index = 0; index < 5; ++index) {
-		surroundingRect.x = faceRect.x + shift[index].x;
-		surroundingRect.y = faceRect.y + shift[index].y;
-		surroundingRect.width = faceRect.width;
-		surroundingRect.height = faceRect.height;
-		surroundingRect &= mask;
-		surroundingMat = mGray(surroundingRect);
-		meanValue[index] = CalculateMeanValue(surroundingMat);
-	}
-	Mat tmp_mat = mGray(faceRect);
-	meanValue[5] = CalculateMeanValue(tmp_mat);
+	delete &meanMat_;
+	delete &derivedMatx_;
+	delete &derivedMaty_;
 
-	/* step-1: calculate deviation of each block: */
-	unsigned blockDeviation = 0;
-	for (int i = 0; i < 5; ++i) {
-		blockDeviation = (meanValue[i] - meanValue[5]) ^ 2;
-	}
 
-	/* step-2: calculate mean value of the whole above chin image: */
-	unsigned sum = 0;
-	for (int i = 0; i < faceRect.y + faceRect.height; i++) {
-		for (int j = 0; j < mGray.cols; j++) {
-			sum += mGray.at<uchar>(i, j);
+	int nSubject = 0;
+	int nMask = 0;
+	for (int y = MARGIN; y < SIZEHEIGHT - 1; y++) {
+		for (int x = MARGIN; x < SIZEWIDTH - MARGIN; x++) {
+			nMask++;
+			bool b = (maskMatx_.at < uchar > (y, x) == DARK
+					|| maskMaty_.at < uchar > (y, x) == DARK);
+			if (b) {
+				maskMatx_.at < uchar > (y, x) = DARK;
+				nSubject++;
+			}
 		}
 	}
-	//analyze the background, without the face rect;
-	sum -= meanValue[5] * faceRect.width * faceRect.height;
-	unsigned bgdAvg = sum / (mGray.cols * (faceRect.y + faceRect.height));
 
-	if (blockDeviation > thresholdBacklit && bgdAvg > thresholdDark) {
-//		return (jint)2;
+	float ratio = (float) nSubject / (float) nMask;
+	if (ratio > 0.5f) {
+		return 2;
 	}
 
-	if (blockDeviation < thresholdBacklit && bgdAvg < thresholdDark) {
-		return (jint) 3;
-	}
+	return 1;
 
-	return (jint) 1;
 }
 
 /*

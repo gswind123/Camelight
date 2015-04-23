@@ -1,16 +1,12 @@
 package com.camelight.android.business;
 
-import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.engine.OpenCVEngineInterface;
 import org.opencv.imgproc.Imgproc;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.PointF;
 import android.graphics.Rect;
-import android.graphics.Bitmap.Config;
 import android.media.FaceDetector.Face;
 import android.os.Message;
 
