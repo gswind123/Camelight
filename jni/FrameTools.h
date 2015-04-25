@@ -36,11 +36,9 @@ int Otsu(cv::Mat &src);
 
 float getPlane(cv::Mat &src, int flag);
 
-cv::Mat calMeanMat(cv::Mat &src_, int &mean);
+int calMeanMat(cv::Mat &src_, cv::Mat &);
 
-int* calDerivedMat(cv::Mat &derivedMatx_, cv::Mat &derivedMaty_, cv::Mat &meanMat_);
-
-void calMaskMat(cv::Mat &maskMatx_, cv::Mat &maskMaty_, cv::Mat &derivedMatx_, cv::Mat &derivedMaty_, int threshold[]);
+void Polymorphy(cv::Mat &src, int TYPE);
 
 #ifdef __cplusplus
 }

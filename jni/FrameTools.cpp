@@ -236,10 +236,8 @@ float getPlane(Mat &src, int flag)
 	return beta*100;
 }
 
-Mat calMeanMat(Mat &src_, int &mean)
+int calMeanMat(Mat &src_, Mat &meanMat_)
 {
-	Mat meanMat_ = Mat::zeros(SIZEWIDTH,SIZEHEIGHT,CV_32SC1);
-
 	Mat cnt = Mat::zeros(SIZEWIDTH,SIZEHEIGHT,CV_32SC1);
 	int width = (src_.cols%SIZEWIDTH) ? (src_.cols/SIZEWIDTH+1) : (src_.cols/SIZEWIDTH);
 	int height = (src_.rows%SIZEHEIGHT) ? (src_.rows/SIZEHEIGHT+1) : (src_.rows/SIZEHEIGHT);
@@ -262,169 +260,37 @@ Mat calMeanMat(Mat &src_, int &mean)
 		}
 	}
 
-	mean = sum / src_.rows / src_.cols;
+	int meanValue = sum / src_.rows / src_.cols;
 
-	return meanMat_;
+	return meanValue;
 }
 
-int* calDerivedMat(Mat &derivedMatx_, Mat &derivedMaty_, Mat &meanMat_)
+
+/* TYPE: 0 = dilate; 1 = erosion
+ *
+ */
+void Polymorphy(Mat &src, int TYPE)
 {
-	int sumx = 0;
-	int sumy = 0;
-	int *threshold = new int[2];
-	for (int y = 1; y < SIZEHEIGHT; y++)
-	{
-		for (int x = 1; x < SIZEWIDTH; x++)
-		{
-			derivedMatx_.at<int>(y, x) = meanMat_.at<int>(y, x) - meanMat_.at<int>(y, x-1);
-			sumx += abs(derivedMatx_.at<int>(y, x));
-			derivedMaty_.at<int>(y, x) = meanMat_.at<int>(y, x) - meanMat_.at<int>(y-1, x);
-			sumy += abs(derivedMaty_.at<int>(y, x));
-		}
-	}
-	threshold[0] = sumx / SIZEWIDTH / SIZEHEIGHT;
-	threshold[1] = sumy / SIZEWIDTH / SIZEHEIGHT;
-	return threshold;
+	TYPE = TYPE ? BRIGHT : DARK;
+
+	for (int i=0; i<src.rows; i++){
+        for (int j=0; j<src.cols; j++){
+            if (src.at<uchar>(i,j) == 255-TYPE){
+                if (i>0 && src.at<uchar>(i-1,j)==TYPE) src.at<uchar>(i-1,j) = 2;
+                if (j>0 && src.at<uchar>(i,j-1)==TYPE) src.at<uchar>(i,j-1) = 2;
+                if (i+1<src.rows && src.at<uchar>(i+1,j)==TYPE) src.at<uchar>(i+1,j) = 2;
+                if (j+1<src.cols && src.at<uchar>(i,j+1)==TYPE) src.at<uchar>(i,j+1) = 2;
+            }
+        }
+    }
+    for (int i=0; i<src.rows; i++){
+        for (int j=0; j<src.cols; j++){
+            if (src.at<uchar>(i,j) == 2){
+                src.at<uchar>(i,j) = 255-TYPE;
+            }
+        }
+    }
 }
-
-void calMaskMat(Mat &maskMatx_, Mat &maskMaty_, Mat &derivedMatx_, Mat &derivedMaty_, int threshold[])
-{
-	int thresholdx = threshold[0];
-	int thresholdy = threshold[1];
-
-	bool flag_bright = false;
-	bool flag_dark = false;
-
-	//horizontal:
-	for (int y = 1; y < SIZEHEIGHT-1; y++)
-	{
-		for (int x = 1; x < SIZEWIDTH-1; x++)
-		{
-			int Cij = derivedMatx_.at<int>(y, x);
-			int C_ij = derivedMatx_.at<int>(y, x+1);
-			if (Cij > thresholdx)
-			{
-				if (abs(C_ij) < thresholdx)
-				{
-					flag_bright = true;
-					maskMatx_.at<uchar>(y,x) = POTENTIAL;
-				}
-				else if (C_ij < -thresholdx)
-				{
-					maskMatx_.at<uchar>(y,x) = TODO;
-				}
-			}else if (Cij < -thresholdx)
-			{
-				if (abs(C_ij) < thresholdx)
-				{
-					flag_dark = true;
-					maskMatx_.at<uchar>(y,x) = POTENTIAL;
-				}
-				else if (C_ij > thresholdx)
-				{
-					maskMatx_.at<uchar>(y,x) = TODO;
-				}
-			}else if (abs(Cij) < thresholdx)
-			{
-				if ((C_ij > thresholdx) && flag_dark)
-				{
-					for (; (x>=0)&&(maskMatx_.at<uchar>(y,x)!=POTENTIAL) ; x--)
-						maskMatx_.at<uchar>(y,x) = DARK;
-					maskMatx_.at<uchar>(y,x) = DARK;
-					flag_dark = false;
-				}else if ((C_ij < -thresholdx) && flag_bright)
-				{
-					for (; (x >=0)&&(maskMatx_.at<uchar>(y,x)!= POTENTIAL) ; x--)
-						maskMatx_.at<uchar>(y,x) = BRIGHT;
-					maskMatx_.at<uchar>(y,x) = BRIGHT;
-					flag_bright = false;
-				}
-			}
-		}
-
-		//at the end of each line,
-		if (flag_bright)
-		{
-			int i = SIZEWIDTH-2;
-			for (; (i >0)&&(maskMatx_.at<uchar>(y,i) != POTENTIAL) ; i--)
-				maskMatx_.at<uchar>(y,i) = BRIGHT;
-			maskMatx_.at<uchar>(y,i) = BRIGHT;
-			flag_bright = false;
-		}
-		if (flag_dark)
-		{
-			int i = SIZEWIDTH-2;
-			for ( ;(i>0)&&(maskMatx_.at<uchar>(y,i) !=POTENTIAL) ; i--)
-				maskMatx_.at<uchar>(y,i) = DARK;
-			maskMatx_.at<uchar>(y,i) = DARK;
-			flag_dark = false;
-		}
-	}
-
-	//vertical:
-	for (int x = 1; x < SIZEWIDTH-1; x++)
-	{
-		for (int y = 1; y < SIZEHEIGHT-1; y++)
-		{
-			int Cij = derivedMaty_.at<int>(y, x);
-			int C_ij = derivedMaty_.at<int>(y+1, x);
-			if (Cij > thresholdy)
-			{
-				if (abs(C_ij) < thresholdy)
-				{
-					flag_bright = true;
-					maskMaty_.at<uchar>(y,x) = POTENTIAL;
-				}
-				else if (C_ij < -thresholdy)
-				{
-					maskMaty_.at<uchar>(y,x) = TODO;
-				}
-			}else if (Cij < -thresholdy)
-			{
-				if (abs(C_ij) < thresholdy)
-				{
-					flag_dark = true;
-					maskMaty_.at<uchar>(y,x) = POTENTIAL;
-				}
-				else if (C_ij > thresholdy)
-				{
-					maskMaty_.at<uchar>(y,x) = TODO;
-				}
-			}else if (abs(Cij) < thresholdy)
-			{
-				if ((C_ij > thresholdy) && flag_dark)
-				{
-
-					for (; (y>0)&&(maskMaty_.at<uchar>(y,x)!=POTENTIAL); y--)
-						maskMaty_.at<uchar>(y,x) = DARK;
-					maskMaty_.at<uchar>(y,x) = DARK;
-					flag_dark = false;
-				}else if ((C_ij < -thresholdy) && flag_bright)
-				{
-					for (; (y>0)&&(maskMaty_.at<uchar>(y,x) != POTENTIAL); y--)
-						maskMaty_.at<uchar>(y,x) = BRIGHT;
-					maskMaty_.at<uchar>(y,x) = BRIGHT;
-					flag_bright = false;
-				}
-			}
-		}
-
-		//at the end of each line,
-		if (flag_bright)
-		{
-			for (int i = SIZEHEIGHT-2; (i>=0)&&(maskMaty_.at<uchar>(i,x) != POTENTIAL) ; i--)
-				maskMaty_.at<uchar>(i,x) = BRIGHT;
-			flag_bright = false;
-		}
-		if (flag_dark)
-		{
-			for (int i = SIZEHEIGHT-2; (i>=0)&&(maskMaty_.at<uchar>(i,x) !=POTENTIAL) ; i--)
-				maskMaty_.at<uchar>(i,x) = DARK;
-			flag_dark = false;
-		}
-	}
-}
-
 
 #ifdef __cplusplus
 }
