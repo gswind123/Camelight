@@ -10,6 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.camelight.android.R;
@@ -31,37 +34,6 @@ public class FrontLightGuideInteraction extends Interaction{
 	private boolean isCanceled_ = false;
 	private boolean isPausing_ = false;
 	
-	private OnClickListener onCloseClickListener_ = new OnClickListener(){
-		@Override
-		public void onClick(View v) {
-			if(InteractionUtil.isDoubleClick()) {
-				return ;
-			}
-			pause(true);
-			CameDialog dialog = new CameDialog();
-			dialog.setDialogType(CameDialog.EXECUTE_DIALOG);
-			dialog.setPositiveText(cacheBean_.context_.getResources().getString(R.string.yes));
-			dialog.setNegativeText(cacheBean_.context_.getResources().getString(R.string.no));
-			dialog.setDialogContent(cacheBean_.context_.getResources().getString(R.string.ask_to_close_guide));
-			dialog.setOnPositiveListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					if(cacheBean_.context_ instanceof CameraActivity) {
-						isCanceled_ = true;
-						((CameraActivity)(cacheBean_.context_)).stopCurrentInteraction();
-					}
-				}
-			});
-			dialog.setOnNegativeClick(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					pause(false);
-				}
-			});
-			dialog.show((FragmentActivity)(cacheBean_.context_));
-		}
-	};
-	
 	private Interactor detectDegreeInteractor_ = null;
 	private Thread detectDegreeThread_ = null;
 	private Handler msgHandler_ = null;
@@ -74,6 +46,7 @@ public class FrontLightGuideInteraction extends Interaction{
 		private boolean isVisible_;
 		
 		private View mainView_ = null;
+		private View wrapContainer_ = null;
 		private View degreeView_ = null;
 		private View faceLeft_ = null;
 		private View faceRight_ = null;
@@ -252,6 +225,7 @@ public class FrontLightGuideInteraction extends Interaction{
 			CameraActivity act = (CameraActivity) cacheBean_.context_;
 			LayoutInflater inflater = (LayoutInflater)act.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			mainView_ = inflater.inflate(R.layout.front_light_show_degree_layout, null);
+			wrapContainer_ = mainView_.findViewById(R.id.wrap_container);
 			degreeView_ = mainView_.findViewById(R.id.degree_view);
 			faceLeft_ = mainView_.findViewById(R.id.face_left);
 			faceRight_ = mainView_.findViewById(R.id.face_right);
@@ -271,9 +245,6 @@ public class FrontLightGuideInteraction extends Interaction{
 			isVisible_ = false;
 			cacheBean_.layout_.addView(mainView_);
 			
-			/** set close btn*/
-			View close_btn = mainView_.findViewById(R.id.close_btn);
-			close_btn.setOnClickListener(onCloseClickListener_);
 			return true;
 		}
 		
@@ -302,6 +273,36 @@ public class FrontLightGuideInteraction extends Interaction{
 		 * */
 		public boolean confirmFrontLight(){
 			return (durationOfFrontLight_ >= FrontLightDurationThreshold);
+		}
+		
+		public void hideGuide() {
+			Animation anim = new TranslateAnimation(
+					Animation.RELATIVE_TO_SELF, 1.f,
+					Animation.RELATIVE_TO_SELF, 1.f,
+					Animation.RELATIVE_TO_SELF, 1.f,
+					Animation.RELATIVE_TO_SELF, 0.f);
+			anim.setDuration(1000);
+			anim.setAnimationListener(new AnimationListener() {
+
+				public void onAnimationStart(Animation animation) {}
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					wrapContainer_.setVisibility(View.GONE);
+				}
+				@Override
+				public void onAnimationRepeat(Animation animation) {}
+			});
+			wrapContainer_.startAnimation(anim);
+		}
+		public void showGuide() {
+			Animation anim = new TranslateAnimation(
+					Animation.RELATIVE_TO_SELF, 1.f,
+					Animation.RELATIVE_TO_SELF, 1.f,
+					Animation.RELATIVE_TO_SELF, 0.f,
+					Animation.RELATIVE_TO_SELF, 1.f);
+			anim.setDuration(1000);
+			wrapContainer_.setVisibility(View.VISIBLE);
+			wrapContainer_.startAnimation(anim);
 		}
 	}
 	
@@ -351,11 +352,7 @@ public class FrontLightGuideInteraction extends Interaction{
 		/** inform the activity*/
 		CameraActivity activity = (CameraActivity) cacheBean_.context_;
 		Message msg = new Message();
-		if(isCanceled_) {
-			msg.what = BusinessState.FRONT_LIGHT_GUIDE_CANCEL;
-		} else {
-			msg.what = BusinessState.FRONT_LIGHT_GUIDE_FINISH;	
-		}
+		
 		activity.getBusinessHandler().sendMessage(msg);
 	}
 	
@@ -376,8 +373,6 @@ public class FrontLightGuideInteraction extends Interaction{
 			@Override
 			public void handleMessage(Message msg) {
 				lightSrcOrientation_ = cacheBean_.getOrientation();
-				//yw_sun debug
-				((CameraActivity)(cacheBean_.context_)).updatePreview(cacheBean_.bitmap_);
 			}
 		};
 

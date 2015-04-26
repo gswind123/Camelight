@@ -5,12 +5,13 @@
     android:layout_height="match_parent">
     
     <LinearLayout
+        android:id="@+id/wrap_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#70ffffff"
         android:orientation="vertical"
         android:gravity="center"
-        android:layout_gravity="bottom"
+        android:layout_gravity="top"
         android:paddingTop="10dp"
         android:paddingBottom="10dp">
         <TextView 
@@ -69,15 +70,6 @@
 		        android:background="@drawable/sun" />
 	    </LinearLayout>
 	    
-        <TextView 
-	        android:id="@+id/close_btn"
-	        android:layout_width="180dp"
-	        android:layout_height="40dp"
-	        android:layout_marginTop="10dp"
-	        android:gravity="center"
-	        style="@style/text_20_000000"
-	        android:background="@drawable/btn_close_guide_selector"
-	        android:text="@string/close_guide"/>
     </LinearLayout>
         
     

@@ -52,7 +52,8 @@ obj/local/armeabi-v7a/objs/frame_processor/FrameTools.o: \
  E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/objdetect/objdetect.hpp \
  E:/ENTERTAINMENT/tools/adt/android-ndk-r9d-windows-x86_64/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/deque \
  E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui.hpp \
- E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui_c.h
+ E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui_c.h \
+ E:/ENTERTAINMENT/tools/adt/android-ndk-r9d-windows-x86_64/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/android/log.h
 
 jni/FrameTools.h:
 
@@ -161,3 +162,5 @@ E:/ENTERTAINMENT/tools/adt/android-ndk-r9d-windows-x86_64/android-ndk-r9d/source
 E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui.hpp:
 
 E:/ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\/include/opencv2/highgui/highgui_c.h:
+
+E:/ENTERTAINMENT/tools/adt/android-ndk-r9d-windows-x86_64/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/android/log.h:

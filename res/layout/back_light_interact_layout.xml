@@ -15,7 +15,7 @@
         android:background="#70ffffff"
         android:orientation="vertical"
         android:gravity="center"
-        android:layout_gravity="bottom"
+        android:layout_gravity="top"
         android:paddingTop="10dp"
         android:paddingBottom="10dp">
         <TextView 
@@ -24,26 +24,6 @@
             android:layout_height="wrap_content"
             style="@style/text_20_000000"
             android:text="@string/desc_search_face"/>    
-        
-        <TextView 
-	        android:id="@+id/btn_take_photo"
-	        android:layout_width="180dp"
-	        android:layout_height="40dp"
-	        android:layout_marginTop="10dp"
-	        android:gravity="center"
-	        style="@style/text_20_000000"
-	        android:background="@drawable/btn_close_guide_selector"
-	        android:text="@string/take_photo"/>
-          
-    	<TextView 
-	        android:id="@+id/btn_close"
-	        android:layout_width="180dp"
-	        android:layout_height="40dp"
-	        android:layout_marginTop="10dp"
-	        android:gravity="center"
-	        style="@style/text_20_000000"
-	        android:background="@drawable/btn_close_guide_selector"
-	        android:text="@string/close"/>  
-	              
+   
     </LinearLayout>
 </FrameLayout>

@@ -10,6 +10,8 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Toast;
+
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CameraFrame;
@@ -72,18 +74,19 @@ public class DetectModeInteraction extends Interaction {
 		FaceExtractor detector = new FaceExtractor(bm);
 		detector.detectFaces();
 		Face faces[] = detector.getFaces();
-		if(faces != null) {
-			cache_bean.faces_ = faces;
-			cache_bean.selectedFrame_ = cur_frame;
-			Mat rgba = ImageProcessor.bitmap2Mat(bm);
-			org.opencv.core.Rect cv_rect = detector.getFaceRect(faces[0]);
-			cache_bean.mode_ = FrameProcessor.AnalyzeMode(rgba.nativeObj, cv_rect);
-			//yw_sun debug
-			((CameraActivity)(cacheBean_.context_)).updatePreview(Bitmap.createBitmap(bm,
-					cv_rect.x, cv_rect.y, cv_rect.width, cv_rect.height));
-			//--------------
-			return InteractState.STOP;
-		}
+
+		cache_bean.faces_ = faces;
+		cache_bean.selectedFrame_ = cur_frame;
+		Mat rgba = ImageProcessor.bitmap2Mat(bm);
+		//org.opencv.core.Rect cv_rect = detector.getFaceRect(faces[0]);
+		org.opencv.core.Rect cv_rect = new org.opencv.core.Rect();
+		cache_bean.mode_ = FrameProcessor.AnalyzeMode(rgba.nativeObj, cv_rect);
+
+		
+		((CameraActivity)(cache_bean.context_)).updatePreview(cache_bean.mode_.description_);
+		Toast toast =Toast.makeText(cache_bean.context_, cache_bean.mode_.description_, Toast.LENGTH_SHORT);
+		toast.show();
+		
 		return InteractState.CONTINUE;
 	}
 
@@ -99,11 +102,6 @@ public class DetectModeInteraction extends Interaction {
 			cache_bean.layout_.removeView(mainView_);
 			/** inform the activity the interaction is done*/
 			Message result = new Message();
-			if(isCanceled_) {
-				result.what = BusinessState.DETECT_FACE_CANCEL;	
-			} else {
-				result.what = BusinessState.DETECT_FACE_FINISH;	
-			}
 			Handler business_handler = act.getBusinessHandler();
 			business_handler.sendMessage(result);
 		}

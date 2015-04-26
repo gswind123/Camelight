@@ -236,6 +236,60 @@ float getPlane(Mat &src, int flag)
 	return beta*100;
 }
 
+int calMeanMat(Mat &src_, Mat &meanMat_)
+{
+	Mat cnt = Mat::zeros(SIZEWIDTH,SIZEHEIGHT,CV_32SC1);
+	int width = (src_.cols%SIZEWIDTH) ? (src_.cols/SIZEWIDTH+1) : (src_.cols/SIZEWIDTH);
+	int height = (src_.rows%SIZEHEIGHT) ? (src_.rows/SIZEHEIGHT+1) : (src_.rows/SIZEHEIGHT);
+
+	for (int y = 0; y < src_.rows; y++)
+	{
+		for (int x = 0; x < src_.cols; x++)
+		{
+			meanMat_.at<int>(y/height, x/width) += src_.at<uchar>(y, x);
+			cnt.at<int>(y/height, x/width) ++;
+		}
+	}
+	int sum = 0;
+	for (int y = 0; y < SIZEHEIGHT; y++)
+	{
+		for (int x = 0; x < SIZEWIDTH; x++)
+		{
+			sum += meanMat_.at<int>(y, x);
+			meanMat_.at<int>(y, x) /= cnt.at<int>(y, x);
+		}
+	}
+	int meanValue = sum / src_.rows / src_.cols;
+
+	return meanValue;
+}
+
+
+/* TYPE: 0 = dilate; 1 = erosion
+ *
+ */
+void Polymorphy(Mat &src, int TYPE)
+{
+	TYPE = TYPE ? BRIGHT : DARK;
+
+	for (int i=0; i<src.rows; i++){
+        for (int j=0; j<src.cols; j++){
+            if (src.at<uchar>(i,j) == 255-TYPE){
+                if (i>0 && src.at<uchar>(i-1,j)==TYPE) src.at<uchar>(i-1,j) = 2;
+                if (j>0 && src.at<uchar>(i,j-1)==TYPE) src.at<uchar>(i,j-1) = 2;
+                if (i+1<src.rows && src.at<uchar>(i+1,j)==TYPE) src.at<uchar>(i+1,j) = 2;
+                if (j+1<src.cols && src.at<uchar>(i,j+1)==TYPE) src.at<uchar>(i,j+1) = 2;
+            }
+        }
+    }
+    for (int i=0; i<src.rows; i++){
+        for (int j=0; j<src.cols; j++){
+            if (src.at<uchar>(i,j) == 2){
+                src.at<uchar>(i,j) = 255-TYPE;
+            }
+        }
+    }
+}
 
 #ifdef __cplusplus
 }

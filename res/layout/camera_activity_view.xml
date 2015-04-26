@@ -18,6 +18,12 @@
 
 	</FrameLayout>
 	
+	<TextView 
+	    android:id="@+id/test_info"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    style="@style/text_20_000000"/>
+	
 	<LinearLayout
 	    android:id="@+id/control_bar"
 	    android:layout_width="match_parent"

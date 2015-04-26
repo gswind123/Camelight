@@ -44,56 +44,7 @@ public class NightSceneGuideInteraction extends Interaction{
 	
 	private final int autoFocusFrameThreshold_ = 100;
 	private int autoFocusFrameCnt_ = 0;
-	
-	private OnClickListener onCancelClickListener = new OnClickListener() {	
-		@Override
-		public void onClick(View v) {
-			if(InteractionUtil.isDoubleClick()) {
-				return ;
-			}
-			pause(true);
-			CameDialog dialog = new CameDialog();
-			dialog.setDialogType(CameDialog.EXECUTE_DIALOG);
-			dialog.setPositiveText(cacheBean_.context_.getResources().getString(R.string.yes));
-			dialog.setNegativeText(cacheBean_.context_.getResources().getString(R.string.no));
-			dialog.setDialogContent(cacheBean_.context_.getResources().getString(R.string.ask_to_close_guide));
-			dialog.setOnPositiveListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					if(cacheBean_.context_ instanceof CameraActivity) {
-						isGuideCanceled_ = true;
-						((CameraActivity)(cacheBean_.context_)).stopCurrentInteraction();
-					}
-				}
-			});
-			dialog.setOnNegativeClick(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					pause(false);
-				}
-			});
-			dialog.show((FragmentActivity)(cacheBean_.context_));
-		}
-	};
-	
-	private OnClickListener onTakePhotoListener_ = new OnClickListener() {	
-		@Override
-		public void onClick(View v) {
-			if(InteractionUtil.isDoubleClick()) {
-				return ;
-			}
-			cacheBean_.camera_.setFlashLight(true);
-			cacheBean_.camera_.takePicture();
-			Handler handler = new Handler();
-			handler.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-					cacheBean_.camera_.setFlashLight(false);
-				}
-			}, 1000);
-		}
-	};
-	
+		
 	private class DistanceAnimation extends PropertyAnimation {
 		
 		private View distanceView_ = null;
@@ -228,10 +179,6 @@ public class NightSceneGuideInteraction extends Interaction{
 			standardCircle_ = distanceView_.findViewById(R.id.standard_circle);
 			approachingCircle_ = distanceView_.findViewById(R.id.approaching_circle);
 			guideText_ = (TextView)distanceView_.findViewById(R.id.guide_text);
-			View btn_cancel = distanceView_.findViewById(R.id.btn_cancel);
-			btn_cancel.setOnClickListener(onCancelClickListener);
-			View btn_take_photo = distanceView_.findViewById(R.id.btn_take_photo);
-			btn_take_photo.setOnClickListener(onTakePhotoListener_);
 			/** add the view to the outer frame layout*/
 			cacheBean_.layout_.addView(distanceView_);
 			
@@ -307,11 +254,6 @@ public class NightSceneGuideInteraction extends Interaction{
 		/** inform the activity that the guide is finish*/
 		CameraActivity activity = (CameraActivity)cacheBean_.context_;
 		Message msg = new Message();
-		if(isGuideCanceled_) {
-			msg.what = BusinessState.NIGHT_SCENE_GUIDE_CANCEL;
-		} else {
-			msg.what = BusinessState.NIGHT_SCENE_GUIDE_FINISH;
-		}
 		activity.getBusinessHandler().sendMessage(msg);
 	}
 	

@@ -26,40 +26,10 @@ public class BackLightInteraction extends Interaction{
 	
 	private View mainView_ = null;
 	private TextView guideText_ = null;
-	private View btnTakePhoto_ = null;
-	private View btnClose_ = null;
 	private View faceBorder_ = null;
 	
 	private final int NoneFaceFrameThreshold = 5;
 	private int noneFaceFrameNum_ = NoneFaceFrameThreshold;
-	
-	private OnClickListener onCloseClickListener_ = new OnClickListener() {
-		@Override
-		public void onClick(View arg0) {
-			if(InteractionUtil.isDoubleClick()) {
-				return ;
-			}
-			BackLightCacheBean bean = checkParam(cacheBean_);
-			if(bean == null) {
-				return ;
-			}
-			CameraActivity activity = (CameraActivity)cacheBean_.context_;
-			activity.stopCurrentInteraction();
-		}
-	};
-	private OnClickListener onTakePhotoClickListener_ = new OnClickListener() {
-		@Override
-		public void onClick(View arg0) {
-			if(InteractionUtil.isDoubleClick()) {
-				return ;
-			}
-			BackLightCacheBean bean = checkParam(cacheBean_);
-			if(bean == null) {
-				return ;
-			}
-			bean.camera_.takePicture();
-		}
-	};
 	
 	@Override
 	public boolean onInteractStart(CacheBean param) {
@@ -70,11 +40,7 @@ public class BackLightInteraction extends Interaction{
 		LayoutInflater inflater = (LayoutInflater)cacheBean_.context_.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		mainView_ = inflater.inflate(R.layout.back_light_interact_layout, null);
 		guideText_ = (TextView)mainView_.findViewById(R.id.guide_text);
-		btnTakePhoto_ = mainView_.findViewById(R.id.btn_take_photo);
-		btnClose_ = mainView_.findViewById(R.id.btn_close);
 		faceBorder_ = mainView_.findViewById(R.id.face_rect_border);
-		btnTakePhoto_.setOnClickListener(onTakePhotoClickListener_);
-		btnClose_.setOnClickListener(onCloseClickListener_);
 		
 		cacheBean_.layout_.addView(mainView_);
 		return true;
@@ -128,7 +94,6 @@ public class BackLightInteraction extends Interaction{
 		cacheBean_.layout_.removeView(mainView_);
 		CameraActivity activity = (CameraActivity)cacheBean_.context_;
 		Message msg = new Message();
-		msg.what = BusinessState.BACK_LIGHT_GUIDE_CLOSE;
 		activity.getBusinessHandler().sendMessage(msg);
 	}
 	

@@ -28,6 +28,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.camelight.android.R;
 import com.camelight.android.business.BackLightInteraction;
@@ -78,37 +79,12 @@ public class CameraActivity extends FragmentActivity {
 	private Handler businessHandler_ = new Handler(){
 		@Override
 		public void handleMessage(Message msg){
-			if(msg.what == BusinessState.DETECT_FACE_FINISH) {
-				if(detectModeCacheBean_.faces_ != null) {
-					confirmMode();
-				}
-			} else if(msg.what == BusinessState.DETECT_FACE_CANCEL) {
-				showControlBar();
-				CameDialog dialog = new CameDialog();
-				dialog.setDialogType(CameDialog.SINGLE_DIALOG);
-				dialog.setDialogContent(getResources().getString(R.string.detect_mode_canceled));
-				dialog.setSingleText(getResources().getString(R.string.i_know));
-				dialog.show(CameraActivity.this);
-			} else if(msg.what == BusinessState.FRONT_LIGHT_GUIDE_FINISH) {
-				showControlBar();
-				CameDialog dialog = new CameDialog();
-				dialog.setDialogType(CameDialog.SINGLE_DIALOG);
-				dialog.setDialogContent(getResources().getString(R.string.alert_front_light_guide_finish));
-				dialog.setSingleText(getResources().getString(R.string.i_know));
-				dialog.show(CameraActivity.this);
-			} else if(msg.what == BusinessState.FRONT_LIGHT_GUIDE_CANCEL) {
-				showControlBar();
-			} else if(msg.what == BusinessState.BACK_LIGHT_GUIDE_CLOSE) {
-				showControlBar();
-			} else if(msg.what == BusinessState.NIGHT_SCENE_GUIDE_CANCEL) {
-				showControlBar();
-			} else if(msg.what == BusinessState.NIGHT_SCENE_GUIDE_FINISH) {
-				showControlBar();
-				CameDialog dialog = new CameDialog();
-				dialog.setDialogType(CameDialog.SINGLE_DIALOG);
-				dialog.setDialogContent(getResources().getString(R.string.alert_night_scene_guide_finish));
-				dialog.setSingleText(getResources().getString(R.string.i_know));
-				dialog.show(CameraActivity.this);
+			if(msg.what == BusinessState.SWITCH_MODE_FRONTLIGHT) {
+				startGuide(BusinessMode.FRONTLIGHT);
+			} else if(msg.what == BusinessState.SWITCH_MODE_BACKLIGHT) {
+				startGuide(BusinessMode.BACKLIGHT);
+			} else if(msg.what == BusinessState.SWITCH_MODE_NIGHT) {
+				startGuide(BusinessMode.NIGHT);
 			}
 		}
 	};
@@ -152,28 +128,8 @@ public class CameraActivity extends FragmentActivity {
 			if(interactor_.isRunning()) {
 				interactor_.stopInteract();
 			} else {
-				CameDialog dialog = new CameDialog();
-				dialog.setDialogType(CameDialog.EXECUTE_DIALOG);
-				dialog.setDialogContent(getResources().getString(R.string.alert_start_detect_mode));
-				dialog.setPositiveText(getResources().getString(R.string.confirm));
-				dialog.setNegativeText(getResources().getString(R.string.cancel));
-				dialog.setOnPositiveListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						if(InteractionUtil.isDoubleClick()) {
-							return ;
-						}
-						hideControlBar();
-						Handler handler = new Handler();
-						handler.postDelayed(new Runnable() {
-							@Override
-							public void run() {
-								startDetectMode();
-							}
-						}, 500);
-					}
-				});
-				dialog.show(CameraActivity.this);
+				//startGuide(BusinessMode.FRONTLIGHT);
+				startDetectMode();
 			}
 		}
 	};
@@ -259,7 +215,7 @@ public class CameraActivity extends FragmentActivity {
 		interactor_.setParam(bean);
 		DetectModeInteraction detect_mode = new DetectModeInteraction();
 		interactor_.setInteraction(detect_mode);
-		interactor_.startInteract(300);
+		interactor_.startInteract(1000);
     }
     
     public void startFrontLightGuide() {
@@ -322,7 +278,9 @@ public class CameraActivity extends FragmentActivity {
     }
     
     //yw_sun debug
-    public void updatePreview(Bitmap bitmap) {
+    public void updatePreview(String str) {
+    	TextView text = (TextView)findViewById(R.id.test_info);
+    	text.setText(str);
     	return ;
 //    	if(bitmap == null) {
 //    		return ;
