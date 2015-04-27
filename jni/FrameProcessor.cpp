@@ -8,7 +8,7 @@
 using namespace std;
 using namespace cv;
 #define  LOG_TAG    "FrameProcessor"
-#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,11 +62,19 @@ extern "C" {
 
 	int CONTRAST_LOW = 60; // below this value means front/normal light.
 	int CONTRAST_HIGH = 100; //above this value means back light.
-	int DARKTHRESHOLD_LOW = 40; //below this value means dark.
-	int DARKTHRESHOLD_HIGH = 80; //below this value means dark.
+	int DARKTHRESHOLD_LOW = 80; //below this value means dark.
+	int DARKTHRESHOLD_HIGH = 100; //below this value means dark.
+	int NIGHTTHRESHOLD = 80;
+	int BRIGHTTHRESHOLD = 200;
 
 	Mat meanMat_ = Mat::zeros(SIZEWIDTH, SIZEHEIGHT, CV_32SC1);
 	int mean = calMeanMat(mGray, meanMat_);
+	LOGE("mean:%i;",mean);
+	if (mean < NIGHTTHRESHOLD) {
+		return 3;
+	}else if (mean > BRIGHTTHRESHOLD){
+		return 1;
+	}
 
 	Mat maskMat_ = Mat::zeros(SIZEWIDTH, SIZEHEIGHT, CV_8UC1);
 
@@ -109,7 +117,7 @@ extern "C" {
 			}
 		}
 	}
-	if(nSubject == 0) {
+	if(nSubject == 0 || nSurrounding == 0) {
 		return 1;
 	}
 
@@ -119,10 +127,10 @@ extern "C" {
 
 	LOGE("avgSubject:%i;   avgSurrounding:%i;   contrast:%i",avgSubject,avgSurrounding,contrast);
 
-
 	if (contrast < CONTRAST_LOW) {
 		return 1; // front / normal light
 	}
+
 	// in the dark scene, subject is the "surrounding". Hence they need exchanging.
 	LOGE("nSubject:%i;nSurrounding:%i",nSubject,nSurrounding);
 	if (disSubject / nSubject > disSurrounding / nSurrounding) {
@@ -130,8 +138,26 @@ extern "C" {
 		avgSurrounding = avgSubject;
 		avgSubject = temp;
 	}
+
 	if (avgSurrounding < DARKTHRESHOLD_LOW) {
 		return 3; //night scene
+	}
+
+	int Cl = 80;
+	int Ch = 200;
+	float wSubject = 0;
+	if (contrast < Cl) {
+		wSubject = 0.5f;
+	}else if (contrast > Ch){
+		wSubject = 1.0f;
+	}else{
+		wSubject = 0.5f / (Ch - Cl) * (contrast - Cl);
+	}
+
+	float Bl = ((wSubject*avgSubject) + (1-wSubject)*avgSurrounding) / ((wSubject*nSubject) + (1-wSubject)*nSurrounding);
+	LOGE("Bl:%f;",Bl);
+	if (Bl >= 0.5){
+		return 2;
 	}
 
 	if ((avgSubject < DARKTHRESHOLD_HIGH) && contrast > CONTRAST_HIGH) {
