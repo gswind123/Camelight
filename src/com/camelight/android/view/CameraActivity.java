@@ -128,7 +128,7 @@ public class CameraActivity extends FragmentActivity {
 			if(interactor_.isRunning()) {
 				interactor_.stopInteract();
 			} else {
-				//startGuide(BusinessMode.FRONTLIGHT);
+				startGuide(BusinessMode.NIGHT);
 				startDetectMode();
 			}
 		}
@@ -215,7 +215,7 @@ public class CameraActivity extends FragmentActivity {
 		interactor_.setParam(bean);
 		DetectModeInteraction detect_mode = new DetectModeInteraction();
 		interactor_.setInteraction(detect_mode);
-		interactor_.startInteract(1000);
+		interactor_.startInteract(300);
     }
     
     public void startFrontLightGuide() {

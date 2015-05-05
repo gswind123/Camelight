@@ -58,8 +58,6 @@ extern "C" {
 	Mat mGray = *(Mat*) addGray;
 	/*something may be wrong with this line: */
 	//Rect faceRect(x, y, width, height);
-
-
 	int CONTRAST_LOW = 60; // below this value means front/normal light.
 	int CONTRAST_HIGH = 100; //above this value means back light.
 	int DARKTHRESHOLD_LOW = 80; //below this value means dark.
@@ -69,10 +67,10 @@ extern "C" {
 
 	Mat meanMat_ = Mat::zeros(SIZEWIDTH, SIZEHEIGHT, CV_32SC1);
 	int mean = calMeanMat(mGray, meanMat_);
-	LOGE("mean:%i;",mean);
+	LOGE("mean:%i;", mean);
 	if (mean < NIGHTTHRESHOLD) {
 		return 3;
-	}else if (mean > BRIGHTTHRESHOLD){
+	} else if (mean > BRIGHTTHRESHOLD) {
 		return 1;
 	}
 
@@ -82,17 +80,15 @@ extern "C" {
 	for (int y = 0; y < SIZEHEIGHT; y++) {
 		for (int x = 0; x < SIZEWIDTH; x++) {
 			if (meanMat_.at<int>(y, x) < (mean * 2 / 3)) {
-				maskMat_.at < uchar > (y, x) = DARK;
+				maskMat_.at<uchar>(y, x) = DARK;
 			} else {
-				maskMat_.at < uchar > (y, x) = BRIGHT;
+				maskMat_.at<uchar>(y, x) = BRIGHT;
 			}
 		}
 	}
 
-
 	Polymorphy(maskMat_, 0);
 	Polymorphy(maskMat_, 1);
-
 
 	int nSubject = 0;
 	int nSurrounding = 0;
@@ -117,7 +113,7 @@ extern "C" {
 			}
 		}
 	}
-	if(nSubject == 0 || nSurrounding == 0) {
+	if (nSubject == 0 || nSurrounding == 0) {
 		return 1;
 	}
 
@@ -125,14 +121,15 @@ extern "C" {
 	int avgSurrounding = sumSurrounding / nSurrounding;
 	int contrast = avgSurrounding - avgSubject; // this value is always positive.
 
-	LOGE("avgSubject:%i;   avgSurrounding:%i;   contrast:%i",avgSubject,avgSurrounding,contrast);
+	LOGE("avgSubject:%i;   avgSurrounding:%i;   contrast:%i", avgSubject,
+			avgSurrounding, contrast);
 
 	if (contrast < CONTRAST_LOW) {
 		return 1; // front / normal light
 	}
 
 	// in the dark scene, subject is the "surrounding". Hence they need exchanging.
-	LOGE("nSubject:%i;nSurrounding:%i",nSubject,nSurrounding);
+	LOGE("nSubject:%i;nSurrounding:%i", nSubject, nSurrounding);
 	if (disSubject / nSubject > disSurrounding / nSurrounding) {
 		int temp = avgSurrounding;
 		avgSurrounding = avgSubject;
@@ -148,15 +145,16 @@ extern "C" {
 	float wSubject = 0;
 	if (contrast < Cl) {
 		wSubject = 0.5f;
-	}else if (contrast > Ch){
+	} else if (contrast > Ch) {
 		wSubject = 1.0f;
-	}else{
+	} else {
 		wSubject = 0.5f / (Ch - Cl) * (contrast - Cl);
 	}
 
-	float Bl = ((wSubject*avgSubject) + (1-wSubject)*avgSurrounding) / ((wSubject*nSubject) + (1-wSubject)*nSurrounding);
-	LOGE("Bl:%f;",Bl);
-	if (Bl >= 0.5){
+	float Bl = ((wSubject * avgSubject) + (1 - wSubject) * avgSurrounding)
+			/ ((wSubject * nSubject) + (1 - wSubject) * nSurrounding);
+	LOGE("Bl:%f;", Bl);
+	if (Bl >= 0.5) {
 		return 2;
 	}
 
@@ -227,72 +225,72 @@ extern "C" {
  * Method:    nativeCalculateBestDistance
  * Signature: (J)F
  */JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeCalculateBestDistance(
-		JNIEnv *env, jclass cls, jlong addGray, jint size, jint ISO) {
-	Mat mGray = *(Mat*) addGray;
+		JNIEnv *env, jclass cls, jint faceMeanValue, jint size, jint ISO) {
+	 /**
+	  * experiment shows: faceMeanValue > 60
+	  */
+	int slot[] = {25, 29, 35, 47, 77};
+		 /*ratio: 50, 40, 30, 20, 10, 0*/
+	float middleGray = 128.0;
+	int width = 0;
+	int Fd = middleGray - faceMeanValue;
+	if (Fd <= 0) {
+		return 0;
+	}else if(Fd < slot[0]){
+		Fd = slot[0];
+	}else if (Fd < slot[1]){
+		Fd = slot[1];
+	}else if (Fd < slot[2]){
+		Fd = slot[2];
+	}else if (Fd < slot[3]){
+		Fd = slot[3];
+	}else if (Fd < slot[4]){
+		Fd = slot[4];
+	}else{
+		return 0;
+	}
 
-	double base200 = 20;
-	double base400 = -110;
-	double base800 = 60;
-	double middleGray = 120.0;
-	double x[6] = { 0.5, 1.0, 1.5, 2.0, 2.5, 3.0 };
-	double value[8] = { 160.0, 152.0, 147.0, 136.0, 107.0, 92.0, 81.5, 80.0 };
-	double y[7] = { 0 };
-	for (int i = 0; i < 7; i++)
-		y[i] = (value[i] + value[i + 1]) / 2 + base400;
-	double ratio[6] = { 8, 30.53, 82.77, 136.82, 211.03, 268.16 };
-	int level = 0;
-
-	int faceMeanValue = getFaceMeanValue(mGray);
-	int fd = middleGray - faceMeanValue;
 	/* provide three ISO options: */
 	if (ISO == 200) {
-
+		width = 0;
 	} else if (ISO == 400) {
-		if (fd > y[0]) {
-			level = 0;
-		} else if (fd <= y[0] && fd > y[1]) {
-			level = 0;
-		} else if (fd <= y[1] && fd > y[2]) {
-			level = 1;
-		} else if (fd <= y[2] && fd > y[3]) {
-			level = 2;
-		} else if (fd <= y[3] && fd > y[4]) {
-			level = 3;
-		} else if (fd <= y[4] && fd > y[5]) {
-			level = 4;
-		} else if (fd <= y[5] && fd > y[6]) {
-			level = 5;
-		} else if (fd <= y[6]) {
-			level = 5;
-		}
+		float e = log10(386 / Fd) / 0.7;
+		int ratio = pow(10, e);
+		width = sqrt(size / ratio);
+//		width = faceMeanValue;
 	} else if (ISO == 800) { //not available currently;
-		level = -1;
-	}
-	/* determine the showing rectangle: */
-	double r = 0;
-	switch (level) {
-	case 0:
-		r = ratio[0];
-		break;
-	case 1:
-		r = ratio[1];
-		break;
-	case 2:
-		r = ratio[2];
-		break;
-	case 3:
-		r = ratio[3];
-		break;
-	case 4:
-		r = ratio[4];
-		break;
-	case 5:
-		r = ratio[5];
-		break;
+		width = 0;
 	}
 
-	int width = (int) sqrt(size / r);
-	return faceMeanValue * 10;
+	return Fd;
+}
+
+/*
+ * Class:     com_camelight_android_util_FrameProcessor
+ * Method:		nativeGetMeanValue
+ * Signature: (J)F
+ */JNIEXPORT jint JNICALL Java_com_camelight_android_util_FrameProcessor_nativeGetMeanValue(
+		JNIEnv *env, jclass cls, jlong addGray) {
+	int cnt = 0;
+	int sum = 0;
+	int avg = 0;
+	uchar value = 0;
+	Mat src = *(Mat*) addGray;
+
+	for (int i = 0; i < src.rows; i++) {
+		for (int j = 0; j < src.cols; j++) {
+			value = src.at<uchar>(i, j);
+			if (value == 0) {
+				continue;
+			} else {
+				cnt++;
+				sum += value;
+			}
+		}
+	}
+
+	avg = sum / cnt;
+	return avg;
 }
 
 /*

@@ -150,6 +150,7 @@ public class NightSceneGuideInteraction extends Interaction{
 			if(isPausing_) {
 				return true;
 			}
+			distanceText_.setText(String.valueOf(drawWidth_));
 			/** none 0 means face-detected*/
 			if (drawWidth_ >= 0 ) {
 				if(Float.isNaN(drawWidth_)) {

@@ -172,7 +172,6 @@ public class ConfirmModeFragment extends Fragment implements OnClickListener{
 		contentContainer_.startAnimation(fade_out);
 	}
 	
-	
 	private void setModeLayoutByCacheBean(){
 		int image_id = 0;
 		int text_id = 0;

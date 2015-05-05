@@ -32,8 +32,6 @@ cv::Mat nativeDCTFunction(cv::Mat &img);
 
 cv::Mat Zigzag(cv::Mat &src);
 
-int getFaceMeanValue(cv::Mat &src);
-
 int Otsu(cv::Mat &src);
 
 float getPlane(cv::Mat &src, int flag);
