@@ -1,6 +1,7 @@
 package com.camelight.android.model;
 
 
+import com.camelight.android.business.BusinessMode;
 import com.camelight.android.business.FrontLightGuideInteraction;
 import com.camelight.android.view.util.CameraView;
 
@@ -17,7 +18,7 @@ public class DetectDegreeCacheBean extends CacheBean {
 	public CameraView camera_ = null;
 	public Context context_ = null;
 	public FrameLayout layout_ = null;
-	public Bitmap bitmap_ = null; // yw_sun debug
+	public BusinessMode dstMode_ = BusinessMode.NULL;
 	public FrontLightGuideInteraction uiInteraction_ = null;
 	
 	public void setOrientation(float orientation){

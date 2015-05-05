@@ -17,6 +17,7 @@ import com.camelight.android.util.ContinuousDataTracker;
 import com.camelight.android.util.FaceExtractor;
 import com.camelight.android.util.FrameProcessor;
 import com.camelight.android.util.ImageProcessor;
+import com.camelight.android.util.ModeDetector;
 import com.camelight.android.util.OrientationUtil;
 
 public class DetectDegreeInteraction extends Interaction{
@@ -53,14 +54,18 @@ public class DetectDegreeInteraction extends Interaction{
 		byte[] jpeg_data = frame.getJPEGData();
 		Bitmap bm = BitmapFactory.decodeByteArray(jpeg_data, 0, jpeg_data.length);
 		bm = ImageProcessor.rotate(bm, frame.getRotation());
+		//detect mode
+		Mat rgba = ImageProcessor.bitmap2Mat(bm);
+		org.opencv.core.Rect rect = new org.opencv.core.Rect();
+		bean.dstMode_ = ModeDetector.detectMode(rgba, rect);
+		//detect face
 		FaceExtractor detector = new FaceExtractor(bm);
 		detector.detectFaces();
 		Face faces[] = detector.getFaces();
 		if(faces != null) {
-			/*TODO:添加优化的人脸选择*/
+			//calc light degree
 			Face face = faces[0];
-			org.opencv.core.Rect rect = detector.getFaceLowRect(face);
-			Mat rgba = ImageProcessor.bitmap2Mat(bm);
+			rect = detector.getFaceLowRect(face);
 			Mat face_low_mat = new Mat(rgba, rect);
 			Mat fixed_mat = new Mat(FrameProcessor.PREDICT_HEIGHT, FrameProcessor.PREDICT_WIDTH, CvType.CV_8UC4);
 			Imgproc.resize(face_low_mat, fixed_mat, fixed_mat.size());
@@ -77,7 +82,6 @@ public class DetectDegreeInteraction extends Interaction{
 				light_otn = (int)tracker_.calcLastestData();
 			}
 			bean.setOrientation(light_otn);
-			bean.bitmap_ = Bitmap.createBitmap(bm, rect.x, rect.y, rect.width, rect.height);
 			bean.faceRect_ = new Rect(rect.x, rect.y, rect.x+rect.width, rect.y+rect.height);
 			bean.adjustedFrame_ = bm;
 		} else {

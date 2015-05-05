@@ -4,7 +4,7 @@ OPENCV_LIB_TYPE:=STATIC
 #OPENCV_INSTALL_MODULES:=on 
 ifeq ("$(wildcard $(OPENCV_MK_PATH))","")    
 #try to load OpenCV.mk from default install location    
-include H:\Android-dev\Oencv4Android\OpenCV-2.4.10-android-sdk\sdk\native\jni\OpenCV.mk
+include E:\ENTERTAINMENT\tools\OpenCV-2.4.9-android-sdk\sdk\native\jni\OpenCV.mk
 
 else    
 include $(OPENCV_MK_PATH)    

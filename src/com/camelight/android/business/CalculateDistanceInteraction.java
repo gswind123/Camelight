@@ -14,6 +14,7 @@ import com.camelight.android.model.CameraFrame;
 import com.camelight.android.util.FaceExtractor;
 import com.camelight.android.util.FrameProcessor;
 import com.camelight.android.util.ImageProcessor;
+import com.camelight.android.util.ModeDetector;
 
 public class CalculateDistanceInteraction extends Interaction{
 
@@ -45,13 +46,13 @@ public class CalculateDistanceInteraction extends Interaction{
 		detector.detectFaces();
 		Face faces[] = detector.getFaces();
 		bean.curFrame_ = frame;
+		org.opencv.core.Rect cv_rect = new org.opencv.core.Rect();
+		Mat rgba = ImageProcessor.bitmap2Mat(bm);
 		if(faces != null) {
-			/*TODO:添加优化的人脸选择*/
 			Face face = faces[0];
-			org.opencv.core.Rect cv_rect = detector.getFaceRect(face);
+			cv_rect = detector.getFaceRect(face);
 			Rect rect = new Rect(cv_rect.x, cv_rect.y, cv_rect.x+cv_rect.width, cv_rect.y+cv_rect.height);
 			bean.setFaceRect(rect);
-			Mat rgba = ImageProcessor.bitmap2Mat(bm);
 			Mat face_mat = new Mat(rgba, cv_rect);
 			drawWidth = FrameProcessor.CalculateBestDistance(face_mat.nativeObj, rgba.width()*rgba.height(),400);
 			bean.setDrawWidth(drawWidth);
@@ -59,14 +60,10 @@ public class CalculateDistanceInteraction extends Interaction{
 		} else {
 			bean.setDrawWidth(-1);
 		}
+		/*detect mode*/
+		cacheBean_.mode_ = ModeDetector.detectMode(rgba, cv_rect);
+		
 		Message msg = new Message();
-		long cur_time = System.currentTimeMillis();
-		if(lastTime_ == 0) {
-			msg.what = -1;
-		} else {
-			msg.what = (int)(cur_time - lastTime_);
-		}
-		lastTime_ = cur_time;
 		bean.uiInteraction_.sendMessage(msg);
 		return InteractState.CONTINUE;
 	}
