@@ -1,7 +1,10 @@
 package com.camelight.android.business;
 
+import java.sql.Date;
+
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
+import android.media.Image;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -10,11 +13,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.camelight.android.R;
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.DetectDegreeCacheBean;
@@ -43,79 +49,58 @@ public class FrontLightGuideInteraction extends Interaction{
 		private final int LEFT = 1;
 		private final int RIGHT=2;
 		
-		private boolean isVisible_;
+		private boolean isVisible_ = false;
+		private boolean showLock_ = false;
 		
 		private View mainView_ = null;
 		private View wrapContainer_ = null;
 		private View degreeView_ = null;
-		private View faceLeft_ = null;
-		private View faceRight_ = null;
-		private View sunLeft_ = null;
-		private View sunRight_ = null;
-		private View arrowLeft_ = null;
-		private View arrowRight_ = null;
-		private ImageView rotatingSun_ = null;
+		private View rotateArrow_ = null;
 		private int curDirection_ = 0;
 		private int durationOfFrontLight_ = 0;
-		
-		private TextView guideText_ = null;
+		private int durationOfNonfrontLight_ = 0;
 		
 		private float screenWidth_ = 0.f;
 		
 		private int curLevel_ = 0;
-		private int dstLevel_ = 0;
-		private int startWidth_ = 0;
-		private int dstWidth_ = 0;
-		private int curDuration_ = 0;
-		private final int ChangeDuration = 500;
-		private final int FrontLightDurationThreshold = 3000;
+
+		private final int FrontLightDurationThreshold = 500;
 		
 		/*
 		 * @param dir:1,left; 2,right
 		 * */
 		private void setDirection(int dir){
-			if(degreeView_ == null) {
+			if(degreeView_ == null || dir == curDirection_) {
 				return ;
 			}
-			int vis_dir_left = View.GONE;
-			int vis_dir_right = View.GONE;
-			if(dir == LEFT) {
-				vis_dir_left = View.VISIBLE;
-			}else if(dir == RIGHT){
-				vis_dir_right = View.VISIBLE;
+			int anim_id = R.anim.dynamic_arrow_left;
+			if(dir == RIGHT) {
+				anim_id = R.anim.dynamic_arrow_right;
 			}
-			faceRight_.setVisibility(vis_dir_left);
-			sunLeft_.setVisibility(vis_dir_left);
-			arrowLeft_.setVisibility(vis_dir_left);
-			
-			faceLeft_.setVisibility(vis_dir_right);
-			sunRight_.setVisibility(vis_dir_right);
-			arrowRight_.setVisibility(vis_dir_right);
+			ImageView arrow = getArrowView();
+			arrow.setBackgroundResource(anim_id);
+			((AnimationDrawable)(arrow.getBackground())).start();
 			curDirection_ = dir;
 		}
 		
-		private View getArrowView(){
-			if(curDirection_ == LEFT){
-				return arrowLeft_;
-			} else {
-				return arrowRight_;
-			}
+		private ImageView getArrowView(){
+			return (ImageView)rotateArrow_;
 		}
 		
 		/*
-		 * The arrow width(aw) will be divided into 5 levels.
+		 * The arrow rotating speed(ars) will be divided into 5 levels.
 		 * suppose the screen width is w,and the deviation angle is a:
-		 * level 1: a in [0,  20 ]; aw = 0
-		 * level 2: a in [20, 40 ]; aw = 15%*w
-		 * level 3: a in [40, 60 ]; aw = 30%*w
-		 * level 4: a in [60, 100]; aw = 50%*w
-		 * level 5: a in [100, + ]; aw = 65%*w
+		 * level 1: a in [0,  35 ]; ars = 0 fps
+		 * level 2: a in [35, 50 ]; ars = 6 fps
+		 * level 3: a in [50, 80 ]; ars = 12
+		 * level 4: a in [80, 120]; ars = 18
+		 * level 5: a in [120, + ]; ars = 24
 		 * */
 		private final float levelBounds_[] = new float[]{
-			0, 25.f, 50.f, 80.f, 120.f
+			0, 35.f, 50.f, 80.f, 120.f
 		};
-		private final float levelWeight_[] = new float[]{
-			0, /*L1:*/0.f, /*L2:*/0.2f, /*L3:*/0.35f, /*L4:*/0.50f,/*L5:*/0.65f   	
+		private final float levelSpeed[] = new float[]{
+			0.01f, /*L1:*/0.01f, /*L2:*/6.f, /*L3:*/12.f, /*L4:*/18.f,/*L5:*/24.f   	
 		};
 		private int calcLightLevel(float lt_src){
 			int delta = (int)(lt_src - OrientationUtil.getOrientation());
@@ -137,54 +122,14 @@ public class FrontLightGuideInteraction extends Interaction{
 				return RIGHT;
 			}
 		}
-		private float calcDstArrowWidth(int level) {
-			if(level<=0 || level > 5) {
-				return 0.f;
-			}
-			return screenWidth_*levelWeight_[level];
-		}
-		private void setDstLevel(int dir, int level) {
-			/** set a dst level and make the animation to move to it*/
-			View arrow = getArrowView();
-			startWidth_ = arrow.getLayoutParams().width;
-			dstWidth_ = (int)calcDstArrowWidth(level);
-			if(dir == LEFT) {
-				dstWidth_ *= -1;
-			}
-			if(curDirection_ == LEFT) {
-				startWidth_ *= -1;
-			}
-			dstLevel_ = level;
-			curDuration_ = 0;
-		}
-		private void updateWidthChanges(long tween) {
-			if(curLevel_ == dstLevel_) {
-				return ;
-			}
-			View arrow = getArrowView();
-			LayoutParams lp = arrow.getLayoutParams();
-			int cur_width = lp.width;
-			if(curDirection_ == LEFT) {
-				cur_width *= -1;
-			}
-			
-			curDuration_ += tween;
-			int abs_dis = Math.abs(cur_width - dstWidth_);
-			if(abs_dis < 5){
-				curLevel_ = dstLevel_;
-				cur_width = dstWidth_;
-			} else {
-				cur_width = (int)(startWidth_ + (dstWidth_ - startWidth_)*Math.min(1.f, (curDuration_*1.f/ChangeDuration)));
-			}
-			int dir = LEFT;
-			if(cur_width > 0){
-				dir = RIGHT;
-			}
-			setDirection(dir);
-			arrow = getArrowView();
-			lp = arrow.getLayoutParams();
-			lp.width = Math.abs(cur_width);
-			arrow.setLayoutParams(lp);
+		/*
+		 * @return: the millsec of one frame
+		 * */
+		private int getLevelSpeed(int level){
+			float fps = levelSpeed[level];
+			int mspf = (int)(1000/fps);
+			mspf = Math.max(1, mspf);
+			return mspf;
 		}
 		
 		@Override
@@ -195,25 +140,22 @@ public class FrontLightGuideInteraction extends Interaction{
 			if(lightSrcOrientation_ >0) {
 				/** calculate direction and level to move*/
 				int dir = calcDstDirection(lightSrcOrientation_);
-				int level = calcLightLevel(lightSrcOrientation_);
-				if(level != curLevel_ || dir != curDirection_) {
-					setDstLevel(dir, level);
-				}
-				/** move arrow in a short interval*/
-				updateWidthChanges(tweenMillsec);
+				setDirection(dir);
+				curLevel_ = calcLightLevel(lightSrcOrientation_);
+				
+				TextView text = (TextView)mainView_.findViewById(R.id.test_data);
+				String str = "front_light:\t" + durationOfFrontLight_ + "\n" +
+							 "non_front_light:\t"+durationOfNonfrontLight_ + "\n" +
+							 "visibility:\t"+isVisible_;
+				text.setText(str);
+				
 				/** judge if front light is satisfied*/
-				if(curLevel_ == 1 && level == 1) {
+				if(curLevel_ <= 1) {
 					durationOfFrontLight_ += tweenMillsec;
-					showFrontLight(true);
+					durationOfNonfrontLight_ = 0;
 				} else {
 					durationOfFrontLight_ = 0;
-					showFrontLight(false);
-				}
-				/** alert the real guide starts when first face found*/
-				if(isVisible_ == false) {
-					degreeView_.setVisibility(View.VISIBLE);
-					isVisible_ = true;
-					guideText_.setText(cacheBean_.context_.getResources().getString(R.string.desc_front_light_guide));
+					durationOfNonfrontLight_ += tweenMillsec;
 				}
 			}
 			return true;
@@ -227,21 +169,14 @@ public class FrontLightGuideInteraction extends Interaction{
 			mainView_ = inflater.inflate(R.layout.front_light_show_degree_layout, null);
 			wrapContainer_ = mainView_.findViewById(R.id.wrap_container);
 			degreeView_ = mainView_.findViewById(R.id.degree_view);
-			faceLeft_ = mainView_.findViewById(R.id.face_left);
-			faceRight_ = mainView_.findViewById(R.id.face_right);
-			sunLeft_ = mainView_.findViewById(R.id.sun_left);
-			sunRight_ = mainView_.findViewById(R.id.sun_right);
-			arrowLeft_ = mainView_.findViewById(R.id.arrow_left);
-			arrowRight_ = mainView_.findViewById(R.id.arrow_right);
-			guideText_ = (TextView)mainView_.findViewById(R.id.guide_text);
-			rotatingSun_ = (ImageView)mainView_.findViewById(R.id.rotating_sun);
-			
-			((AnimationDrawable)rotatingSun_.getBackground()).start();
+			rotateArrow_ = mainView_.findViewById(R.id.rotate_arrow);
+			LayoutParams lp = rotateArrow_.getLayoutParams();
+			lp.width = (int)(0.5*screenWidth_);
+			lp.height = lp.width*80/310;
+			rotateArrow_.setLayoutParams(lp);
 			setDirection(LEFT);
-			guideText_.setText(cacheBean_.context_.getResources().getString(R.string.desc_search_face));
-			
 			/** add the view to the outer frame layout*/
-			degreeView_.setVisibility(View.GONE);
+			wrapContainer_.setVisibility(View.GONE);
 			isVisible_ = false;
 			cacheBean_.layout_.addView(mainView_);
 			
@@ -253,21 +188,6 @@ public class FrontLightGuideInteraction extends Interaction{
 			cacheBean_.layout_.removeView(mainView_);
 		}
 		
-		/** when in level 1, change UI to show it is with considerable light*/
-		private void showFrontLight(boolean isFrontLight) {
-			int vis_rotating_sun;
-			int vis_other;
-			if(isFrontLight) {
-				vis_rotating_sun = View.VISIBLE;
-				vis_other = View.GONE;
-			} else {
-				vis_rotating_sun = View.GONE;
-				vis_other = View.VISIBLE;	
-			}
-			rotatingSun_.setVisibility(vis_rotating_sun);
-			degreeView_.setVisibility(vis_other);
-		}
-		
 		/*
 		 * @return: true if it is confirm to be front light; false otherwise.
 		 * */
@@ -275,12 +195,19 @@ public class FrontLightGuideInteraction extends Interaction{
 			return (durationOfFrontLight_ >= FrontLightDurationThreshold);
 		}
 		
+		/*
+		 * @return: true if it is confirm to be not front light; false otherwise.
+		 * */
+		public boolean confirmNonfrontLight(){
+			return (durationOfNonfrontLight_ >= FrontLightDurationThreshold);
+		}
+		
 		public void hideGuide() {
-			Animation anim = new TranslateAnimation(
-					Animation.RELATIVE_TO_SELF, 1.f,
-					Animation.RELATIVE_TO_SELF, 1.f,
-					Animation.RELATIVE_TO_SELF, 1.f,
-					Animation.RELATIVE_TO_SELF, 0.f);
+			if(showLock_) {
+				return ;
+			}
+			showLock_ = true;
+			Animation anim = new AlphaAnimation(1.f, 0.f);
 			anim.setDuration(1000);
 			anim.setAnimationListener(new AnimationListener() {
 
@@ -288,6 +215,8 @@ public class FrontLightGuideInteraction extends Interaction{
 				@Override
 				public void onAnimationEnd(Animation animation) {
 					wrapContainer_.setVisibility(View.GONE);
+					showLock_ = false;
+					isVisible_ = false;
 				}
 				@Override
 				public void onAnimationRepeat(Animation animation) {}
@@ -295,18 +224,38 @@ public class FrontLightGuideInteraction extends Interaction{
 			wrapContainer_.startAnimation(anim);
 		}
 		public void showGuide() {
-			Animation anim = new TranslateAnimation(
-					Animation.RELATIVE_TO_SELF, 1.f,
-					Animation.RELATIVE_TO_SELF, 1.f,
-					Animation.RELATIVE_TO_SELF, 0.f,
-					Animation.RELATIVE_TO_SELF, 1.f);
+			if(showLock_) {
+				return ;
+			}
+			showLock_ = true;
+			Animation anim = new AlphaAnimation(0.f, 1.f);
 			anim.setDuration(1000);
+			anim.setAnimationListener(new AnimationListener() {
+
+				public void onAnimationStart(Animation animation) {}
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					showLock_ = false;
+				}
+				@Override
+				public void onAnimationRepeat(Animation animation) {}
+			});
 			wrapContainer_.setVisibility(View.VISIBLE);
 			wrapContainer_.startAnimation(anim);
+			isVisible_ = true;
+		}
+		
+		public boolean isVisible(){
+			return isVisible_;
+		}
+		
+		public boolean isLocked(){
+			return showLock_;
 		}
 	}
 	
 	private FrontLightAnimation degreeAnimation_ = new FrontLightAnimation();
+	private int quitMessage_ = BusinessState.NULL;
 	
 	@Override
 	public boolean onInteractStart(CacheBean param) {
@@ -327,15 +276,32 @@ public class FrontLightGuideInteraction extends Interaction{
 		if(bean == null) {
 			return InteractState.CONTINUE;
 		}
-	
+		//update animations
 		animator_.update();
 		
-		if(degreeAnimation_.confirmFrontLight()) {
-			isCanceled_ = false;
-			return InteractState.STOP;
+		//judge if to hide the guide view
+		if(degreeAnimation_.isVisible()) {
+			if(degreeAnimation_.confirmFrontLight()) {
+				degreeAnimation_.hideGuide();
+			}
+		} else {
+			if(degreeAnimation_.confirmNonfrontLight()){
+				degreeAnimation_.showGuide();
+			}
 		}
 		
-		return InteractState.CONTINUE;
+		//judge if to switch mode
+		BusinessMode mode = cacheBean_.dstMode_;
+		if(mode != BusinessMode.FRONTLIGHT && mode != BusinessMode.NULL) {
+			if(mode == BusinessMode.BACKLIGHT) {
+				quitMessage_ = BusinessState.SWITCH_MODE_BACKLIGHT;
+			} else if(mode == BusinessMode.NIGHT) {
+				quitMessage_ = BusinessState.SWITCH_MODE_NIGHT;
+			}
+			return InteractState.STOP;
+		} else {
+			return InteractState.CONTINUE;	
+		}	
 	}
 
 	@Override
@@ -352,7 +318,7 @@ public class FrontLightGuideInteraction extends Interaction{
 		/** inform the activity*/
 		CameraActivity activity = (CameraActivity) cacheBean_.context_;
 		Message msg = new Message();
-		
+		msg.what = quitMessage_;
 		activity.getBusinessHandler().sendMessage(msg);
 	}
 	

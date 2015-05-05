@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.widget.FrameLayout;
 
+import com.camelight.android.business.BusinessMode;
 import com.camelight.android.business.NightSceneGuideInteraction;
 import com.camelight.android.view.util.CameraView;
 
@@ -16,6 +17,7 @@ public class CalculateDistanceCacheBean extends CacheBean{
 	public FrameLayout layout_ = null;
 	public NightSceneGuideInteraction uiInteraction_ = null;
 	public CameraFrame curFrame_ = null;
+	public BusinessMode mode_ = BusinessMode.NULL;
 	
 	public Rect faceRect_ = new Rect();
 	

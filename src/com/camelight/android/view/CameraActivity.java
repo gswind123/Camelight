@@ -29,6 +29,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.camelight.android.R;
 import com.camelight.android.business.BackLightInteraction;
@@ -50,8 +51,6 @@ import com.camelight.android.view.util.CameDialog;
 import com.camelight.android.view.util.CameraView;
 
 public class CameraActivity extends FragmentActivity {
-
-	public ConfirmModeFragment confirmModeFragment = null;
 	
 	private CameraView camera_;
 	private View controlBar_;
@@ -64,28 +63,23 @@ public class CameraActivity extends FragmentActivity {
 	ImageView testImage_ = null;
 	ViewGroup rootView_ = null;
 	
-	private Runnable onConfirmModeFinish_ = new Runnable() {
-		@Override
-		public void run() {
-			if(detectModeCacheBean_.mode_ != BusinessMode.NULL) {
-				startGuide(detectModeCacheBean_.mode_);	
-			} else {
-				CameraActivity.this.showControlBar();
-			}
-		}
-	};
-	
 	private DetectModeCacheBean detectModeCacheBean_ = new DetectModeCacheBean();
 	private Handler businessHandler_ = new Handler(){
 		@Override
 		public void handleMessage(Message msg){
+			String mode_str = "";
 			if(msg.what == BusinessState.SWITCH_MODE_FRONTLIGHT) {
+				mode_str="switch to front light mode";
 				startGuide(BusinessMode.FRONTLIGHT);
 			} else if(msg.what == BusinessState.SWITCH_MODE_BACKLIGHT) {
+				mode_str="switch to back light mode";
 				startGuide(BusinessMode.BACKLIGHT);
 			} else if(msg.what == BusinessState.SWITCH_MODE_NIGHT) {
+				mode_str="switch to night mode";
 				startGuide(BusinessMode.NIGHT);
 			}
+			Toast toast = Toast.makeText(CameraActivity.this, mode_str, Toast.LENGTH_SHORT);
+			toast.show();
 		}
 	};
 	
@@ -128,8 +122,7 @@ public class CameraActivity extends FragmentActivity {
 			if(interactor_.isRunning()) {
 				interactor_.stopInteract();
 			} else {
-				startGuide(BusinessMode.NIGHT);
-				startDetectMode();
+				startGuide(BusinessMode.FRONTLIGHT);
 			}
 		}
 	};
@@ -265,16 +258,6 @@ public class CameraActivity extends FragmentActivity {
     		break;
     	default: break;
     	}
-    }
-    
-    public void confirmMode(){
-        confirmModeFragment = ConfirmModeFragment.createInstance(detectModeCacheBean_);
-        confirmModeFragment.setOnFinish(onConfirmModeFinish_);
-    	FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-    	ft.add(android.R.id.content, confirmModeFragment, ConfirmModeFragment.TAG);
-    	ft.addToBackStack(ConfirmModeFragment.TAG);
-    	ft.setCustomAnimations(FragmentTransaction.TRANSIT_FRAGMENT_FADE, FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-    	ft.commit();
     }
     
     //yw_sun debug

@@ -279,8 +279,39 @@ public class CameraView extends SurfaceView
 		if(num == 0) {
 			return ;
 		}
-		param.setMeteringAreas(focus_areas);
 		param.setFocusAreas(focus_areas);
+		camera_.setParameters(param);
+		camera_.autoFocus(null);
+	}
+	
+	/*
+	 * @param:	area:The metering area; 
+	 *		   	width:width of the current camera frame; 
+	 * 			height:height of the current camera frame 
+	 * */
+	@SuppressLint("NewApi") public void  setMeteringArea(Rect area, int width, int height) {
+		if(area == null || camera_ == null || latestFrame_ == null) {
+			return ;
+		}
+		if(area.width() == 0 || area.height() == 0) {
+			return ;
+		}
+		//Map (x,y) to coordination in [-1000, 1000]
+		int mapped_x = (int)(-1000 + 2000.f*area.left/width);
+		int mapped_y = (int)(-1000 + 2000.f*area.right/height);
+		Rect mapped_area = new Rect(mapped_x, mapped_y, mapped_x+area.width(), mapped_y+area.height());
+		ArrayList<Area> focus_areas = new ArrayList<Area>();
+		focus_areas.add(new Area(mapped_area, 1000));
+		Parameters param = camera_.getParameters();
+		int num = param.getMaxNumMeteringAreas();
+		if(num == 0) {
+			return ;
+		}
+		num = param.getMaxNumFocusAreas();
+		if(num == 0) {
+			return ;
+		}
+		param.setMeteringAreas(focus_areas);
 		camera_.setParameters(param);
 		camera_.autoFocus(null);
 	}

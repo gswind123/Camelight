@@ -1,5 +1,7 @@
 package com.camelight.android.business;
 
+import org.opencv.core.Mat;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,6 +16,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -39,11 +44,12 @@ public class NightSceneGuideInteraction extends Interaction{
 	private Handler msgHandler_ = null;
 	private PropertyAnimator animator_ = new PropertyAnimator();
 	
-	private boolean isGuideCanceled_ = false;
 	private boolean isPausing_ = false;
 	
 	private final int autoFocusFrameThreshold_ = 100;
 	private int autoFocusFrameCnt_ = 0;
+	
+	private int quitMessage_ = BusinessState.NULL;
 		
 	private class DistanceAnimation extends PropertyAnimation {
 		
@@ -55,13 +61,17 @@ public class NightSceneGuideInteraction extends Interaction{
 		private final int ChangeDuration = 1000;
 		private int curDuration_ = 0;
 		
-		private final int DistanceFitDurationThreshold = 2000;
+		private final int DistanceFitDurationThreshold = 500;
 		private int curFitDuration_ = 0;
+		private int curNonFitDuration_ = 0;
 		
 		private int startRadius_ = 0;
 		private int dstRadius_ = 0;
 		private int startStdRadius_ = 0;
 		private int dstStdRadius_ = 0;
+		
+		private boolean showLock_ = false;
+		private boolean isVisible_ = false;
 		
 		//yw_sun debug
 		private TextView distanceText_ = null;
@@ -85,7 +95,7 @@ public class NightSceneGuideInteraction extends Interaction{
 //			return radius;
 //		}
 		private boolean isRadiusFit(int cur,int std) {
-			float indist = std * 0.15f;
+			float indist = std * 0.2f;
 			float dis = Math.abs(std - cur);
 			return (dis < indist);
 		}
@@ -132,10 +142,12 @@ public class NightSceneGuideInteraction extends Interaction{
 				 * the light condition is good enough.
 				 */ 
 				curFitDuration_ += tween;
+				curNonFitDuration_ = 0;
 				cur_radius = cur_std_radius;
 				standardCircle_.setBackgroundResource(R.drawable.green_circle);
 			} else {
 				curFitDuration_ = 0;
+				curNonFitDuration_ += tween;
 				standardCircle_.setBackgroundResource(R.drawable.red_circle);
 			}
 			lp.width = cur_radius;
@@ -181,6 +193,8 @@ public class NightSceneGuideInteraction extends Interaction{
 			approachingCircle_ = distanceView_.findViewById(R.id.approaching_circle);
 			guideText_ = (TextView)distanceView_.findViewById(R.id.guide_text);
 			/** add the view to the outer frame layout*/
+			distanceView_.setVisibility(View.GONE);
+			isVisible_ = false;
 			cacheBean_.layout_.addView(distanceView_);
 			
 			distanceText_ = (TextView)distanceView_.findViewById(R.id.distance_text);
@@ -195,6 +209,61 @@ public class NightSceneGuideInteraction extends Interaction{
 		public boolean isDistanceFit() {
 			return curFitDuration_ >= DistanceFitDurationThreshold;
 		}
+		public boolean isDistanceNonfit(){
+			return curNonFitDuration_ >= DistanceFitDurationThreshold;
+		}
+		
+		public void hideGuide() {
+			if(showLock_) {
+				return ;
+			}
+			showLock_ = true;
+			Animation anim = new AlphaAnimation(1.f, 0.f);
+			anim.setDuration(1000);
+			anim.setAnimationListener(new AnimationListener() {
+
+				public void onAnimationStart(Animation animation) {}
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					distanceView_.setVisibility(View.GONE);
+					showLock_ = false;
+					isVisible_ = false;
+				}
+				@Override
+				public void onAnimationRepeat(Animation animation) {}
+			});
+			distanceView_.startAnimation(anim);
+		}
+		public void showGuide() {
+			if(showLock_) {
+				return ;
+			}
+			showLock_ = true;
+			Animation anim = new AlphaAnimation(0.f, 1.f);
+			anim.setDuration(1000);
+			anim.setAnimationListener(new AnimationListener() {
+
+				public void onAnimationStart(Animation animation) {}
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					showLock_ = false;
+				}
+				@Override
+				public void onAnimationRepeat(Animation animation) {}
+			});
+			distanceView_.setVisibility(View.VISIBLE);
+			distanceView_.startAnimation(anim);
+			isVisible_ = true;
+		}
+		
+		public boolean isVisible(){
+			return isVisible_;
+		}
+		
+		public boolean isLocked(){
+			return showLock_;
+		}
+		
 	}	
 	private DistanceAnimation distanceAnimation_ = new DistanceAnimation();
 	
@@ -229,17 +298,30 @@ public class NightSceneGuideInteraction extends Interaction{
 					rect.left = width - rect.left - rect.width();
 					rect.right = rect.left+rect_width;
 				}
-				cacheBean_.camera_.setFocusAt(rect, width, height);
+				cacheBean_.camera_.setMeteringArea(rect, width, height);
 			}
 		}
-
-//		if(distanceAnimation_.isDistanceFit()) {
-//			isGuideCanceled_ = false;
-//			return InteractState.STOP;
-//		} else {
-//			return InteractState.CONTINUE;		
-//		}
-		return InteractState.CONTINUE;
+		
+		/*judge if to hide guide*/
+		if(distanceAnimation_.isVisible() && distanceAnimation_.isDistanceFit()) {
+			distanceAnimation_.hideGuide();
+		}
+		else if(distanceAnimation_.isDistanceNonfit()){
+			distanceAnimation_.showGuide();
+		}
+		
+		/*judge if to switch mode*/
+		BusinessMode mode = cacheBean_.mode_;
+		if(mode != BusinessMode.NULL && mode!=BusinessMode.NIGHT) {
+			if(mode == BusinessMode.FRONTLIGHT) {
+				quitMessage_ = BusinessState.SWITCH_MODE_FRONTLIGHT;
+			} else if(mode == BusinessMode.BACKLIGHT) {
+				quitMessage_ = BusinessState.SWITCH_MODE_BACKLIGHT;
+			}
+			return InteractState.STOP;
+		} else {
+			return InteractState.CONTINUE;	
+		}	
 	}
 
 	@Override
@@ -255,6 +337,7 @@ public class NightSceneGuideInteraction extends Interaction{
 		/** inform the activity that the guide is finish*/
 		CameraActivity activity = (CameraActivity)cacheBean_.context_;
 		Message msg = new Message();
+		msg.what = quitMessage_;
 		activity.getBusinessHandler().sendMessage(msg);
 	}
 	
