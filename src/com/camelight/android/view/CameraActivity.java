@@ -12,6 +12,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -59,10 +60,12 @@ public class CameraActivity extends FragmentActivity {
 	private ImageView btnGuide_;
 	private FrameLayout cameraLayout_;
 	private Interactor interactor_;
+	private ImageView modeIcon_;
 
 	ImageView testImage_ = null;
 	ViewGroup rootView_ = null;
 	
+	private BusinessMode businessMode_ = BusinessMode.NULL; 
 	private DetectModeCacheBean detectModeCacheBean_ = new DetectModeCacheBean();
 	private Handler businessHandler_ = new Handler(){
 		@Override
@@ -120,8 +123,10 @@ public class CameraActivity extends FragmentActivity {
 				return ;
 			}
 			if(interactor_.isRunning()) {
+				v.setSelected(false);
 				interactor_.stopInteract();
 			} else {
+				v.setSelected(true);
 				startGuide(BusinessMode.FRONTLIGHT);
 			}
 		}
@@ -149,6 +154,7 @@ public class CameraActivity extends FragmentActivity {
         btnGuide_ = (ImageView) findViewById(R.id.btn_start_guide);
         cameraLayout_ = (FrameLayout) findViewById(R.id.camera_frame);
         btnSwitchCamera_ = (ImageView)findViewById(R.id.btn_switch_camera);
+        modeIcon_ = (ImageView)findViewById(R.id.mode_icon);
         Handler handler = new Handler();
         interactor_ = new Interactor(handler);
         
@@ -157,7 +163,11 @@ public class CameraActivity extends FragmentActivity {
 			@Override
 			public void onClick(View v) {
 				if(InteractionUtil.isDoubleClick() == false) {
-					camera_.takePicture();
+					Drawable background = camera_.getBackground();
+					if(background instanceof AnimationDrawable) {
+						((AnimationDrawable)(background)).start();
+					}
+					//camera_.takePicture();
 				}
 			}
 		});
@@ -262,15 +272,26 @@ public class CameraActivity extends FragmentActivity {
     
     //yw_sun debug
     public void updatePreview(String str) {
-    	TextView text = (TextView)findViewById(R.id.test_info);
-    	text.setText(str);
-    	return ;
 //    	if(bitmap == null) {
 //    		return ;
 //    	}
 //    	Bitmap bmp = Bitmap.createBitmap(bitmap);
 //    	BitmapDrawable drawable = new BitmapDrawable(bmp);
 //    	preView_.setBackgroundDrawable(drawable);
+    }
+    
+    public void updateMode(BusinessMode mode){
+    	if(mode == businessMode_) {
+    		return ;
+    	}
+    	businessMode_ = mode;
+    	if(mode == BusinessMode.FRONTLIGHT) {
+    		modeIcon_.setBackgroundResource(R.drawable.pic_front_light_mode);
+    	} else if(mode == BusinessMode.BACKLIGHT) {
+    		modeIcon_.setBackgroundResource(R.drawable.pic_back_light_mode);
+    	} else if(mode == BusinessMode.NIGHT) {
+    		modeIcon_.setBackgroundResource(R.drawable.pic_night_mode);
+    	}
     }
     
     public void stopCurrentInteraction() {

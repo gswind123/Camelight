@@ -56,7 +56,6 @@ public class NightSceneGuideInteraction extends Interaction{
 		private View distanceView_ = null;
 		private View standardCircle_ = null;
 		private View approachingCircle_ = null;
-		private TextView guideText_ = null;
 		
 		private final int ChangeDuration = 1000;
 		private int curDuration_ = 0;
@@ -176,10 +175,7 @@ public class NightSceneGuideInteraction extends Interaction{
 					setDstCircle(radius, cacheBean_.faceRect_);
 				}
 				updateCircle(tweenMillsec);
-				guideText_.setText(cacheBean_.context_.getResources().getString(R.string.desc_night_scene_guide));
-			} else {
-				guideText_.setText(cacheBean_.context_.getResources().getString(R.string.desc_search_face));	
-			}
+			} 
 			return true;
 		}
 		
@@ -190,7 +186,6 @@ public class NightSceneGuideInteraction extends Interaction{
 			distanceView_ = inflater.inflate(R.layout.night_scene_show_distance_layout, null);
 			standardCircle_ = distanceView_.findViewById(R.id.standard_circle);
 			approachingCircle_ = distanceView_.findViewById(R.id.approaching_circle);
-			guideText_ = (TextView)distanceView_.findViewById(R.id.guide_text);
 			/** add the view to the outer frame layout*/
 			distanceView_.setVisibility(View.GONE);
 			isVisible_ = false;
@@ -311,6 +306,7 @@ public class NightSceneGuideInteraction extends Interaction{
 		
 		/*judge if to switch mode*/
 		BusinessMode mode = cacheBean_.mode_;
+		((CameraActivity)cacheBean_.context_).updateMode(mode);
 		if(mode != BusinessMode.NULL && mode!=BusinessMode.NIGHT) {
 			if(mode == BusinessMode.FRONTLIGHT) {
 				quitMessage_ = BusinessState.SWITCH_MODE_FRONTLIGHT;
