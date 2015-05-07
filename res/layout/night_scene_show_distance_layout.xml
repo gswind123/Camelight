@@ -23,24 +23,5 @@
     	android:layout_gravity="center"
         android:background="@drawable/red_circle" />
     
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#70ffffff"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:layout_gravity="top"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp">
-        <TextView 
-            android:id="@+id/guide_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/text_20_000000"
-            android:text="@string/desc_search_face"/>    
-          
-          
-	              
-    </LinearLayout>
 
 </FrameLayout>

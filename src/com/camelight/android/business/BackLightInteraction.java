@@ -30,7 +30,6 @@ public class BackLightInteraction extends Interaction{
 	private BackLightCacheBean cacheBean_ = new BackLightCacheBean();
 	
 	private View mainView_ = null;
-	private TextView guideText_ = null;
 	private View faceBorder_ = null;
 	
 	private final int NoneFaceFrameThreshold = 5;
@@ -46,7 +45,6 @@ public class BackLightInteraction extends Interaction{
 		}
 		LayoutInflater inflater = (LayoutInflater)cacheBean_.context_.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		mainView_ = inflater.inflate(R.layout.back_light_interact_layout, null);
-		guideText_ = (TextView)mainView_.findViewById(R.id.guide_text);
 		faceBorder_ = mainView_.findViewById(R.id.face_rect_border);
 		
 		cacheBean_.layout_.addView(mainView_);
@@ -67,7 +65,6 @@ public class BackLightInteraction extends Interaction{
 		boolean has_face = face_detector.detectFaces();
 		org.opencv.core.Rect face_rect = new org.opencv.core.Rect();
 		if(has_face) {
-			guideText_.setText(cacheBean_.context_.getResources().getString(R.string.desc_auto_focus_on_face));
 			Face faces[] = face_detector.getFaces();
 			face_rect = face_detector.getFaceRect(faces[0]);
 			if(cur_frame.isMirror()) {
@@ -101,6 +98,7 @@ public class BackLightInteraction extends Interaction{
 		/*judge if to switch mode*/
 		Mat mat = ImageProcessor.bitmap2Mat(bm);
 		BusinessMode mode = ModeDetector.detectMode(mat, face_rect);
+		((CameraActivity)cacheBean_.context_).updateMode(mode);
 		if(mode != BusinessMode.BACKLIGHT && mode != BusinessMode.NULL) {
 			if(mode == BusinessMode.FRONTLIGHT) {
 				quitMessage_ = BusinessState.SWITCH_MODE_FRONTLIGHT;

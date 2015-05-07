@@ -1,0 +1,18 @@
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="true">
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_1" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_2" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_3" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_4" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_5" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_6" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_7" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_8" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_7" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_6" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_5" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_4" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_3" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_2" />
+    <item android:duration="30" android:drawable="@drawable/btn_take_photo_1" />
+</animation-list>

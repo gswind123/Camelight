@@ -292,6 +292,7 @@ public class FrontLightGuideInteraction extends Interaction{
 		
 		//judge if to switch mode
 		BusinessMode mode = cacheBean_.dstMode_;
+		((CameraActivity)cacheBean_.context_).updateMode(mode);
 		if(mode != BusinessMode.FRONTLIGHT && mode != BusinessMode.NULL) {
 			if(mode == BusinessMode.BACKLIGHT) {
 				quitMessage_ = BusinessState.SWITCH_MODE_BACKLIGHT;
