@@ -28,6 +28,7 @@ import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
@@ -51,10 +52,12 @@ import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Choreographer.FrameCallback;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -89,6 +92,7 @@ public class CameraView extends SurfaceView
 		initCamera(CAMERA_FACE_ANY, width, height);
 	}
 	
+	@SuppressWarnings("deprecation")
 	protected void initCamera(int facing ,int width, int height){
 		//release the previous camera if any
 		disconnectCamera();
@@ -148,6 +152,7 @@ public class CameraView extends SurfaceView
 				Log.e(TAG, e.getMessage());
 			}
 			camera_.startPreview();
+			this.setOnTouchListener(touchListener_);
 		}
 	}
 	
@@ -280,6 +285,7 @@ public class CameraView extends SurfaceView
 			return ;
 		}
 		param.setFocusAreas(focus_areas);
+		param.setMeteringAreas(focus_areas);
 		camera_.setParameters(param);
 		camera_.autoFocus(null);
 	}
@@ -328,4 +334,54 @@ public class CameraView extends SurfaceView
 		param.setFlashMode(mode);
 		camera_.setParameters(param);
 	}
+	
+	private OnGestureListener gestureListener_ = new OnGestureListener() {
+		@Override
+		public boolean onSingleTapUp(MotionEvent e) {
+			Rect area = new Rect();
+			float x = e.getX();
+			float y = e.getY();
+			area.left = (int)(x - 75);
+			area.right = (int)(x + 75);
+			area.top = (int)(y-75);
+			area.bottom = (int)(y-75);
+			setFocusAt(area, viewWidth_, viewHeight_);
+			return true;
+		}
+		@Override
+		public void onShowPress(MotionEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+				float distanceY) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+		@Override
+		public void onLongPress(MotionEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+				float velocityY) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+		
+		@Override
+		public boolean onDown(MotionEvent e) {
+			// TODO Auto-generated method stub
+			return true;
+		}
+	};
+	private GestureDetector gestureDetector_ = new GestureDetector(gestureListener_);
+	private OnTouchListener touchListener_ = new OnTouchListener() {
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			return gestureDetector_.onTouchEvent(event);
+		}
+	};
 }

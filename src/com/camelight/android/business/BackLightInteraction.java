@@ -24,6 +24,7 @@ import com.camelight.android.util.FaceExtractor;
 import com.camelight.android.util.ImageProcessor;
 import com.camelight.android.util.InteractionUtil;
 import com.camelight.android.util.ModeDetector;
+import com.camelight.android.util.MotionUtil;
 import com.camelight.android.view.CameraActivity;
 
 public class BackLightInteraction extends Interaction{
@@ -99,15 +100,22 @@ public class BackLightInteraction extends Interaction{
 		Mat mat = ImageProcessor.bitmap2Mat(bm);
 		BusinessMode mode = ModeDetector.detectMode(mat, face_rect);
 		((CameraActivity)cacheBean_.context_).updateMode(mode);
-		if(mode != BusinessMode.BACKLIGHT && mode != BusinessMode.NULL) {
-			if(mode == BusinessMode.FRONTLIGHT) {
-				quitMessage_ = BusinessState.SWITCH_MODE_FRONTLIGHT;
-			} else if(mode == BusinessMode.NIGHT) {
-				quitMessage_ = BusinessState.SWITCH_MODE_NIGHT;
-			}
-			return InteractState.STOP;
+		/*Only judge mode when camera is moved*/
+		if(!MotionUtil.isMoved()) {
+			return InteractState.CONTINUE;
 		} else {
-			return InteractState.CONTINUE;	
+			/*judge if to switch mode*/
+			MotionUtil.commitMotion();
+			if(mode != BusinessMode.BACKLIGHT && mode != BusinessMode.NULL) {
+				if(mode == BusinessMode.FRONTLIGHT) {
+					quitMessage_ = BusinessState.SWITCH_MODE_FRONTLIGHT;
+				} else if(mode == BusinessMode.NIGHT) {
+					quitMessage_ = BusinessState.SWITCH_MODE_NIGHT;
+				}
+				return InteractState.STOP;
+			} else {
+				return InteractState.CONTINUE;	
+			}
 		}
 	}
 

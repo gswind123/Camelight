@@ -47,6 +47,7 @@ import com.camelight.android.model.DetectDegreeCacheBean;
 import com.camelight.android.model.DetectModeCacheBean;
 import com.camelight.android.util.FrameProcessor;
 import com.camelight.android.util.InteractionUtil;
+import com.camelight.android.util.MotionUtil;
 import com.camelight.android.util.OrientationUtil;
 import com.camelight.android.view.util.CameDialog;
 import com.camelight.android.view.util.CameraView;
@@ -181,6 +182,7 @@ public class CameraActivity extends FragmentActivity {
 		});
         
         OrientationUtil.register(this);
+        MotionUtil.register(this);
     }
 
     @Override

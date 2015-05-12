@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentActivity;
 
 public class OrientationUtil implements SensorEventListener {
 	private float orientation_ = -1;
+	private float orientation3d_[] = new float[3];
 	private boolean registered_ = false;
 	
 	static private OrientationUtil instance_ = new OrientationUtil();
@@ -41,10 +42,20 @@ public class OrientationUtil implements SensorEventListener {
 	static public float getOrientation() {
 		return instance_.orientation_;
 	}
+	
+	/** 
+	 * Get the 3d orientation data of the sensor
+	 * @param
+	 * @return a array contains orientation data
+	 * */
+	static public float[] getOrientation3D(){
+		return instance_.orientation3d_.clone();
+	}
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		orientation_ = event.values[0];
+		orientation3d_ = event.values;
 	}
 
 	@Override
