@@ -46,7 +46,7 @@ public class NightSceneGuideInteraction extends Interaction{
 	
 	private boolean isPausing_ = false;
 	
-	private final int autoFocusFrameThreshold_ = 100;
+	private final int autoFocusFrameThreshold_ = 60;
 	private int autoFocusFrameCnt_ = 0;
 	
 	private int quitMessage_ = BusinessState.NULL;
@@ -139,7 +139,7 @@ public class NightSceneGuideInteraction extends Interaction{
 				/** 
 				 * if the approaching circle is close enough to std circle,
 				 * the light condition is good enough.
-				 */ 
+				 */
 				curFitDuration_ += tween;
 				curNonFitDuration_ = 0;
 				cur_radius = cur_std_radius;
@@ -214,7 +214,7 @@ public class NightSceneGuideInteraction extends Interaction{
 			}
 			showLock_ = true;
 			Animation anim = new AlphaAnimation(1.f, 0.f);
-			anim.setDuration(1000);
+			anim.setDuration(100);
 			anim.setAnimationListener(new AnimationListener() {
 
 				public void onAnimationStart(Animation animation) {}
@@ -235,7 +235,7 @@ public class NightSceneGuideInteraction extends Interaction{
 			}
 			showLock_ = true;
 			Animation anim = new AlphaAnimation(0.f, 1.f);
-			anim.setDuration(1000);
+			anim.setDuration(100);
 			anim.setAnimationListener(new AnimationListener() {
 
 				public void onAnimationStart(Animation animation) {}

@@ -26,7 +26,7 @@ public class CalculateDistanceInteraction extends Interaction{
 	private long lastTime_ = 0;
 	private float drawWidth = 0;
 	Queue<Integer> q;
-	private int capacity = 10;
+	private int capacity = 5;
 	
 	@Override
 	public boolean onInteractStart(CacheBean param) {

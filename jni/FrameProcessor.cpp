@@ -67,7 +67,7 @@ extern "C" {
 
 	Mat meanMat_ = Mat::zeros(SIZEWIDTH, SIZEHEIGHT, CV_32SC1);
 	int mean = calMeanMat(mGray, meanMat_);
-	LOGE("mean:%i;", mean);
+//	LOGE("mean:%i;", mean);
 	if (mean < NIGHTTHRESHOLD) {
 		return 3;
 	} else if (mean > BRIGHTTHRESHOLD) {
@@ -121,15 +121,14 @@ extern "C" {
 	int avgSurrounding = sumSurrounding / nSurrounding;
 	int contrast = avgSurrounding - avgSubject; // this value is always positive.
 
-	LOGE("avgSubject:%i;   avgSurrounding:%i;   contrast:%i", avgSubject,
-			avgSurrounding, contrast);
+//	LOGE("avgSubject:%i;   avgSurrounding:%i;   contrast:%i", avgSubject, avgSurrounding, contrast);
 
 	if (contrast < CONTRAST_LOW) {
 		return 1; // front / normal light
 	}
 
 	// in the dark scene, subject is the "surrounding". Hence they need exchanging.
-	LOGE("nSubject:%i;nSurrounding:%i", nSubject, nSurrounding);
+//	LOGE("nSubject:%i;nSurrounding:%i", nSubject, nSurrounding);
 	if (disSubject / nSubject > disSurrounding / nSurrounding) {
 		int temp = avgSurrounding;
 		avgSurrounding = avgSubject;
@@ -153,8 +152,8 @@ extern "C" {
 
 	float Bl = ((wSubject * avgSubject) + (1 - wSubject) * avgSurrounding)
 			/ ((wSubject * nSubject) + (1 - wSubject) * nSurrounding);
-	LOGE("Bl:%f;", Bl);
-	if (Bl >= 0.5) {
+//	LOGE("Bl:%f;", Bl);
+	if ((Bl >= 0.5)&&(avgSubject < DARKTHRESHOLD_HIGH)) {
 		return 2;
 	}
 
@@ -231,9 +230,10 @@ extern "C" {
 	  */
 	int slot[] = {25, 29, 35, 47, 77};
 		 /*ratio: 50, 40, 30, 20, 10, 0*/
-	float middleGray = 128.0;
+	float middleGray = 140.0;
 	int width = 0;
 	int Fd = middleGray - faceMeanValue;
+
 	if (Fd <= 0) {
 		return 0;
 	}else if(Fd < slot[0]){
@@ -257,12 +257,11 @@ extern "C" {
 		float e = log10(386 / Fd) / 0.7;
 		int ratio = pow(10, e);
 		width = sqrt(size / ratio);
-//		width = faceMeanValue;
 	} else if (ISO == 800) { //not available currently;
 		width = 0;
 	}
-
-	return Fd;
+	LOGE("faceMeanValue:   %i;Fd:   %i;width:   %i", faceMeanValue, Fd, width);
+	return faceMeanValue;
 }
 
 /*

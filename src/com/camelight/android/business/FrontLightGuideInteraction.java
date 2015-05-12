@@ -97,7 +97,8 @@ public class FrontLightGuideInteraction extends Interaction{
 		 * level 5: a in [120, + ]; ars = 24
 		 * */
 		private final float levelBounds_[] = new float[]{
-			0, 35.f, 50.f, 80.f, 120.f
+//			0, 35.f, 50.f, 80.f, 120.f
+			0, 50.f, 60.f, 80.f, 120.f
 		};
 		private final float levelSpeed[] = new float[]{
 			0.01f, /*L1:*/0.01f, /*L2:*/6.f, /*L3:*/12.f, /*L4:*/18.f,/*L5:*/24.f   	

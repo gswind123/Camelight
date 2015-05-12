@@ -90,6 +90,7 @@ public class DetectModeInteraction extends Interaction {
 		return InteractState.CONTINUE;
 	}
 
+	
 	@Override
 	public void onInteractFinish(CacheBean param) {
 		DetectModeCacheBean cache_bean = checkParam(param);
