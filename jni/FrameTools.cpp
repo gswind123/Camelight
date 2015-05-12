@@ -192,32 +192,6 @@ int Otsu(Mat &src)
     return threshold;
 }
 
-int getFaceMeanValue(Mat &src){
-	int cnt = 0;
-	int sum = 0;
-	int avg = 0;
-	uchar value = 0;
-
-	for (int i=0; i<src.rows; i++)
-	{
-		for (int j=0; j<src.cols; j++)
-		{
-			value = src.at<uchar>(i,j);
-			if (value == 0)
-			{
-				continue;
-			}else
-			{
-				cnt++;
-				sum += value;
-			}
-		}
-	}
-
-	avg = sum / cnt;
-	return avg;
-}
-
 float getPlane(Mat &src, int flag)
 {
 	int aveY = 0;

@@ -66,7 +66,7 @@ public class CameraActivity extends FragmentActivity {
 	ImageView testImage_ = null;
 	ViewGroup rootView_ = null;
 	
-	private BusinessMode businessMode_ = BusinessMode.NULL; 
+	private BusinessMode businessMode_ = BusinessMode.NULL;
 	private DetectModeCacheBean detectModeCacheBean_ = new DetectModeCacheBean();
 	private Handler businessHandler_ = new Handler(){
 		@Override
@@ -168,7 +168,7 @@ public class CameraActivity extends FragmentActivity {
 					if(background instanceof AnimationDrawable) {
 						((AnimationDrawable)(background)).start();
 					}
-					//camera_.takePicture();
+					camera_.takePicture();
 				}
 			}
 		});
@@ -210,6 +210,10 @@ public class CameraActivity extends FragmentActivity {
     
     public Handler getBusinessHandler(){
     	return businessHandler_;
+    }
+    
+    public BusinessMode getBusinessMode(){
+    	return businessMode_;
     }
     
     public void startDetectMode(){

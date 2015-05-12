@@ -1,5 +1,7 @@
 package com.camelight.android.business;
 
+import java.util.Queue;
+import java.util.LinkedList;
 import org.opencv.core.Mat;
 
 import android.graphics.Bitmap;
@@ -7,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.media.FaceDetector.Face;
 import android.os.Message;
+import android.widget.Toast;
 
 import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CalculateDistanceCacheBean;
@@ -22,9 +25,14 @@ public class CalculateDistanceInteraction extends Interaction{
 	
 	private long lastTime_ = 0;
 	private float drawWidth = 0;
+	Queue<Integer> q;
+	private int capacity = 5;
 	
 	@Override
 	public boolean onInteractStart(CacheBean param) {
+		q = new LinkedList<Integer>();
+		for (int i = capacity; i > 0; i--)
+            q.add(0);
 		CalculateDistanceCacheBean bean = checkParam(param);
 		if(bean == null) {
 			return false;
@@ -54,7 +62,15 @@ public class CalculateDistanceInteraction extends Interaction{
 			Rect rect = new Rect(cv_rect.x, cv_rect.y, cv_rect.x+cv_rect.width, cv_rect.y+cv_rect.height);
 			bean.setFaceRect(rect);
 			Mat face_mat = new Mat(rgba, cv_rect);
-			drawWidth = FrameProcessor.CalculateBestDistance(face_mat.nativeObj, rgba.width()*rgba.height(),400);
+			q.remove();
+			q.add(FrameProcessor.nativeGetMeanValue(face_mat.nativeObj));
+			int sum = 0;
+			for (Integer i : q) {
+				sum += i;
+			}
+			int avg = sum / q.size();
+			
+			drawWidth = FrameProcessor.CalculateBestDistance(avg, rgba.width()*rgba.height(),400);
 			bean.setDrawWidth(drawWidth);
 			bean.faceRect_ = rect;
 		} else {

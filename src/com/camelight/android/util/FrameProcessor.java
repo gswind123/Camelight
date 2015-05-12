@@ -7,6 +7,7 @@ import libsvm.svm;
 import libsvm.svm_model;
 import libsvm.svm_node;
 
+import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 
 import android.graphics.Bitmap;
@@ -77,8 +78,8 @@ public class FrameProcessor {
 	/**
 	 * @return current rectangle to draw;
 	 */
-	static public int CalculateBestDistance(long add, int size, int ISO) {
-		int width = nativeCalculateBestDistance(add, size, ISO);
+	static public int CalculateBestDistance(int avg, int size, int ISO) {
+		int width = nativeCalculateBestDistance(avg, size, ISO);
 		return width;
 	}
 	
@@ -146,6 +147,12 @@ public class FrameProcessor {
 	 * @param add pointing to face map;
 	 * @return current square width to draw
 	 */
-	native public static int nativeCalculateBestDistance(long add, int size, int ISO);
+	native public static int nativeCalculateBestDistance(int avg, int size, int ISO);
 	
+	
+	/**
+	 * @param add
+	 * @return the mean value of Mat.
+	 */
+	native public static int nativeGetMeanValue(long add);
 }

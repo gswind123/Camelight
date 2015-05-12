@@ -14,6 +14,7 @@ import junit.framework.Test;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+import com.camelight.android.business.BusinessMode;
 import com.camelight.android.model.CameraFrame;
 import com.camelight.android.util.ImageProcessor;
 import com.camelight.android.view.CameraActivity;
@@ -63,7 +64,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class CameraView extends SurfaceView 
+public class CameraView extends SurfaceView
 	implements SurfaceHolder.Callback, PictureCallback, PreviewCallback{
 	
 	public static String TAG = "CameraView";
@@ -74,18 +75,20 @@ public class CameraView extends SurfaceView
 	
 	protected int cameraFacing_ = -1;
 	protected Activity activity_;
+	protected CameraActivity cameraActivity;
 	protected Camera camera_ = null;
 	protected int cameraIndex_ = -1;
 	protected boolean connected_ = false;
 	protected int viewWidth_ = 0;
 	protected int viewHeight_ = 0;
-	
+	protected boolean flash = false;
 	private CameraFrame latestFrame_;
 	
 	public CameraView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		getHolder().addCallback(this);
 		activity_ = (Activity)context;
+		cameraActivity = (CameraActivity)context;
 	}
 	
 	protected void initCamera(int width, int height) {
@@ -183,7 +186,7 @@ public class CameraView extends SurfaceView
 		initCamera(CAMERA_FACE_BACK ,width, height);
 	}
 	
-	public int getCameraFacing() {
+	public int getCameraFacing(){
 		return cameraFacing_;
 	}
 	
@@ -199,6 +202,10 @@ public class CameraView extends SurfaceView
 	
 	public void takePicture() {
 		camera_.setPreviewCallback(null);
+		if (cameraActivity.getBusinessMode() == BusinessMode.NIGHT) {
+			flash = true;
+			setFlashLight(true);
+		}
 		camera_.takePicture(null, null, this);
 	}
 
@@ -223,6 +230,9 @@ public class CameraView extends SurfaceView
 
             fos.write(data);
             fos.close();
+            if (flash) {
+				setFlashLight(false);
+			}
             Toast.makeText(activity_, fileName + " saved", Toast.LENGTH_SHORT).show();
         } catch (java.io.IOException e) {
             Log.e("PictureDemo", "Exception in photoCallback", e);
