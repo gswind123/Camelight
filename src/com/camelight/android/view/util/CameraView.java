@@ -184,6 +184,7 @@ public class CameraView extends SurfaceView
 		viewWidth_ = width;
 		viewHeight_ = height;
 		initCamera(CAMERA_FACE_BACK ,width, height);
+		this.setOnTouchListener(this.touchListener_);
 	}
 	
 	public int getCameraFacing(){
@@ -351,10 +352,10 @@ public class CameraView extends SurfaceView
 			Rect area = new Rect();
 			float x = e.getX();
 			float y = e.getY();
-			area.left = (int)(x - 75);
-			area.right = (int)(x + 75);
-			area.top = (int)(y-75);
-			area.bottom = (int)(y-75);
+			area.left = (int)Math.max(x-75, 0);
+			area.right = (int)Math.max(x+75, 0);
+			area.top = (int)Math.max(y-75, 0);
+			area.bottom = (int)Math.max(y+75, 0);
 			setFocusAt(area, viewWidth_, viewHeight_);
 			return true;
 		}
