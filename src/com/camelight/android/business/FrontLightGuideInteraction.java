@@ -103,10 +103,14 @@ public class FrontLightGuideInteraction extends Interaction{
 		private final float levelSpeed[] = new float[]{
 			0.01f, /*L1:*/0.01f, /*L2:*/6.f, /*L3:*/12.f, /*L4:*/18.f,/*L5:*/24.f   	
 		};
-		private int calcLightLevel(float lt_src){
+		private int calcDeltaDegree(float lt_src) {
 			int delta = (int)(lt_src - OrientationUtil.getOrientation());
 			delta = (delta+360)%360;
 			delta = Math.min(delta, 360-delta);
+			return delta;
+		}
+		private int calcLightLevel(float lt_src){
+			int delta = calcDeltaDegree(lt_src);
 			for(int i=0;i<levelBounds_.length;i++) {
 				if(delta < levelBounds_[i]) {
 					return i;
@@ -145,9 +149,15 @@ public class FrontLightGuideInteraction extends Interaction{
 				curLevel_ = calcLightLevel(lightSrcOrientation_);
 				
 				TextView text = (TextView)mainView_.findViewById(R.id.test_data);
-				String str = "front_light:\t" + durationOfFrontLight_ + "\n" +
-							 "non_front_light:\t"+durationOfNonfrontLight_ + "\n" +
-							 "visibility:\t"+isVisible_;
+				String str = "";
+				if(curDirection_ == LEFT) {
+					str = "×ó×ª:";
+				} else {
+					str = "ÓÒ×ª£º";
+				}
+				str += calcDeltaDegree(lightSrcOrientation_);
+				str += "¶È";
+				
 				text.setText(str);
 				
 				/** judge if front light is satisfied*/

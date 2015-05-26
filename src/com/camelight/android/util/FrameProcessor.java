@@ -56,9 +56,10 @@ public class FrameProcessor {
 		int mode = nativeAnalyzeMode(add, faceRect.x, faceRect.y , faceRect.width, faceRect.height);
 		switch (mode) {
 		case 1:
-			return BusinessMode.FRONTLIGHT;
 		case 2:
-			return BusinessMode.BACKLIGHT;
+			return BusinessMode.FRONTLIGHT;
+//		case 2:
+//			return BusinessMode.BACKLIGHT;
 		case 3:
 			return BusinessMode.NIGHT;
 		default:

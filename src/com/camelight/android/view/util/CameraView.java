@@ -50,6 +50,8 @@ import android.content.res.ColorStateList;
 import android.media.FaceDetector;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Choreographer.FrameCallback;
@@ -214,6 +216,7 @@ public class CameraView extends SurfaceView
 	public void onPictureTaken(byte[] data, Camera camera) {
 		camera_.setPreviewCallback(this);
 		camera_.startPreview();
+		/*calc photo name*/
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
         String currentDateandTime = sdf.format(new Date());
         String pathName = Environment.getExternalStorageDirectory().getPath() + "/CameraExample/";
@@ -221,24 +224,43 @@ public class CameraView extends SurfaceView
         if(!path.exists() || !path.isDirectory()) {
         	path.mkdir();
         }
-        String fileName = pathName + currentDateandTime + ".jpg";
-       
-        //rotate the image and rite the image in a file (in jpeg format)
-        int rotation = this.latestFrame_.getRotation();
-        data = ImageProcessor.rotateJPEGData(data, rotation);
-        try {
-            FileOutputStream fos = new FileOutputStream(fileName);
-
-            fos.write(data);
-            fos.close();
-            if (flash) {
-				setFlashLight(false);
+        final String fileName = pathName + currentDateandTime + ".jpg";
+		final Handler handler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				if(msg.what == 1) {
+					Toast.makeText(activity_, fileName + " saved", Toast.LENGTH_SHORT).show();
+				} else if(msg.what == 0) {
+					Toast.makeText(activity_, "photo saving failed", Toast.LENGTH_SHORT).show();
+				}
 			}
-            Toast.makeText(activity_, fileName + " saved", Toast.LENGTH_SHORT).show();
-        } catch (java.io.IOException e) {
-            Log.e("PictureDemo", "Exception in photoCallback", e);
-        }
-		
+		};
+
+		final byte thread_data[] = data;
+		Thread write_thread = new Thread(){
+			@Override
+			public void run(){
+				Message msg = new Message();
+		        //rotate the image and rite the image in a file (in jpeg format)
+		        int rotation = CameraView.this.latestFrame_.getRotation();
+		        byte rotated_data[] = ImageProcessor.rotateJPEGData(thread_data, rotation);
+		        try {
+		            FileOutputStream fos = new FileOutputStream(fileName);
+
+		            fos.write(rotated_data);
+		            fos.close();
+		            if (flash) {
+						setFlashLight(false);
+					}
+		            msg.what = 1;
+		            handler.sendMessage(msg);
+		        } catch (java.io.IOException e) {
+		        	msg.what = 0;
+		        	handler.sendMessage(msg);
+		        }
+			}
+		};
+		write_thread.start();
 	}
 
 	@Override
