@@ -50,6 +50,9 @@ public class NightSceneGuideInteraction extends Interaction{
 	private int autoFocusFrameCnt_ = 0;
 	
 	private int quitMessage_ = BusinessState.NULL;
+	
+	private Point focusCenter_ = new Point(0,0);
+	private int cost_ = 0;
 		
 	private class DistanceAnimation extends PropertyAnimation {
 		
@@ -57,7 +60,7 @@ public class NightSceneGuideInteraction extends Interaction{
 		private View standardCircle_ = null;
 		private View approachingCircle_ = null;
 		
-		private final int ChangeDuration = 1000;
+		private final float ChangeDuration = 1000.f;
 		private int curDuration_ = 0;
 		
 		private final int DistanceFitDurationThreshold = 500;
@@ -68,9 +71,11 @@ public class NightSceneGuideInteraction extends Interaction{
 		private int dstRadius_ = 0;
 		private int startStdRadius_ = 0;
 		private int dstStdRadius_ = 0;
+		private int tracker_ = 0;
 		
 		private boolean showLock_ = false;
 		private boolean isVisible_ = false;
+		private boolean isAnimating = false;
 		
 		//yw_sun debug
 		private TextView distanceText_ = null;
@@ -115,10 +120,18 @@ public class NightSceneGuideInteraction extends Interaction{
 			dstStdRadius_ = face.width();
 			
 			curDuration_ = 0;
+			isAnimating = true;
 		}
 		
 		private void updateCircle(long tween) {
+			if(isAnimating == false) {
+				return ;
+			}
 			float rate = Math.min(1.f, curDuration_*1.f/ChangeDuration);
+			if(rate >= 1.f) {
+				isAnimating = false;
+				rate = 1.f;
+			}
 			/** update standard circle*/
 			ViewGroup.LayoutParams  lp = standardCircle_.getLayoutParams(); 
 			if(lp == null) {
@@ -127,13 +140,14 @@ public class NightSceneGuideInteraction extends Interaction{
 			int cur_std_radius = (int)(startStdRadius_ + (dstStdRadius_-startStdRadius_)*rate);
 			lp.width = cur_std_radius;
 			lp.height = cur_std_radius;
-			standardCircle_.setLayoutParams(lp);
+			//standardCircle_.setLayoutParams(lp);
 			/** update approaching circle*/
 			lp = approachingCircle_.getLayoutParams();
 			if(lp == null) {
 				return ;
 			}
 			int cur_radius = (int)(startRadius_ + (dstRadius_-startRadius_)*rate);
+			tracker_ = cur_radius;
 			if( isRadiusFit(dstRadius_, dstStdRadius_) &&
 				isRadiusFit(cur_radius, cur_std_radius)) {
 				/** 
@@ -143,11 +157,11 @@ public class NightSceneGuideInteraction extends Interaction{
 				curFitDuration_ += tween;
 				curNonFitDuration_ = 0;
 				cur_radius = cur_std_radius;
-				standardCircle_.setBackgroundResource(R.drawable.green_circle);
+				//standardCircle_.setBackgroundResource(R.drawable.green_circle);
 			} else {
 				curFitDuration_ = 0;
 				curNonFitDuration_ += tween;
-				standardCircle_.setBackgroundResource(R.drawable.red_circle);
+				//standardCircle_.setBackgroundResource(R.drawable.red_circle);
 			}
 			lp.width = cur_radius;
 			lp.height = cur_radius;
@@ -161,18 +175,23 @@ public class NightSceneGuideInteraction extends Interaction{
 			if(isPausing_) {
 				return true;
 			}
-			distanceText_.setText(String.valueOf(drawWidth_));
+			String text = "计算半径:"+String.valueOf(drawWidth_)+"\n";
+			text += "目标半径:"+dstRadius_+"\n";
+			text += "是否可见:"+isVisible_ + "\n";
+			text += "算法开销:"+cost_+"\n";
+			text += "是否动画:"+isAnimating;
+			distanceText_.setText(text);
 			/** none 0 means face-detected*/
 			if (drawWidth_ >= 0 ) {
 				if(Float.isNaN(drawWidth_)) {
-					drawWidth_ = 100;
+					return true;
 				}
 				FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)approachingCircle_.getLayoutParams();
 				if (params == null) {
 					return false;
 				}
 				int radius = (int) drawWidth_;
-				if(Math.abs(radius - dstRadius_) > 5) {
+				if(Math.abs(radius - dstRadius_) > 3) {
 					setDstCircle(radius, cacheBean_.faceRect_);
 				}
 				updateCircle(tweenMillsec);
@@ -286,6 +305,7 @@ public class NightSceneGuideInteraction extends Interaction{
 			if(autoFocusFrameCnt_ >= autoFocusFrameThreshold_) {
 				autoFocusFrameCnt_ = 0;
 				Rect rect = cacheBean_.faceRect_;
+				Point cur_center = new Point(rect.centerX(), rect.centerY());
 				int width = cacheBean_.curFrame_.getHeight();
 				int height = cacheBean_.curFrame_.getWidth();
 				int rect_width = rect.width();
@@ -293,15 +313,21 @@ public class NightSceneGuideInteraction extends Interaction{
 					rect.left = width - rect.left - rect.width();
 					rect.right = rect.left+rect_width;
 				}
-				cacheBean_.camera_.setMeteringArea(rect, width, height);
+				int distance = (int)Math.sqrt((cur_center.x - focusCenter_.x)*(cur_center.x - focusCenter_.x) + 
+										 (cur_center.y - focusCenter_.y)*(cur_center.y - focusCenter_.y));
+				if(distance > rect_width) {
+					cacheBean_.camera_.setMeteringArea(rect, width, height);
+					focusCenter_ = cur_center;
+				}
+				
 			}
 		}
 		
 		/*judge if to hide guide*/
 		if(distanceAnimation_.isVisible() && distanceAnimation_.isDistanceFit()) {
-			distanceAnimation_.hideGuide();
+//			distanceAnimation_.hideGuide();
 		}
-		else if(distanceAnimation_.isDistanceNonfit()){
+		else if(distanceAnimation_.isVisible() ==false && distanceAnimation_.isDistanceNonfit()){
 			distanceAnimation_.showGuide();
 		}
 		
@@ -354,6 +380,10 @@ public class NightSceneGuideInteraction extends Interaction{
 			@Override
 			public void handleMessage(Message msg) {
 				drawWidth_ = cacheBean_.getDrawWidth();
+				if(Float.isNaN(drawWidth_) == false) {
+					drawWidth_ += 6;
+				}
+				cost_ = msg.what;
 			}
 		};
 
@@ -365,7 +395,7 @@ public class NightSceneGuideInteraction extends Interaction{
 				calculateDistanceInteractor_ = new Interactor(handler);
 				calculateDistanceInteractor_.setParam(cacheBean_);
 				calculateDistanceInteractor_.setInteraction(new CalculateDistanceInteraction());
-				calculateDistanceInteractor_.startInteract(100);
+				calculateDistanceInteractor_.startInteract(30);
 				Looper.loop();
 			}
 		};

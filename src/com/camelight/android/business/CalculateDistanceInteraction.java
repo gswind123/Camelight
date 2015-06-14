@@ -27,12 +27,12 @@ public class CalculateDistanceInteraction extends Interaction{
 	private float drawWidth = 0;
 	Queue<Integer> q;
 	private int capacity = 5;
+	private int detectCtr_ = 0;
+	private final int DetectThreshold = 5;
 	
 	@Override
 	public boolean onInteractStart(CacheBean param) {
 		q = new LinkedList<Integer>();
-		for (int i = capacity; i > 0; i--)
-            q.add(0);
 		CalculateDistanceCacheBean bean = checkParam(param);
 		if(bean == null) {
 			return false;
@@ -42,6 +42,9 @@ public class CalculateDistanceInteraction extends Interaction{
 
 	@Override
 	public InteractState onInteracting(CacheBean param) {
+		int pre_dur = 0;
+		long start_time = System.currentTimeMillis();
+		
 		CalculateDistanceCacheBean bean = checkParam(param);
 		if(bean == null) {
 			return InteractState.CONTINUE;
@@ -55,14 +58,19 @@ public class CalculateDistanceInteraction extends Interaction{
 		Face faces[] = detector.getFaces();
 		bean.curFrame_ = frame;
 		org.opencv.core.Rect cv_rect = new org.opencv.core.Rect();
-		Mat rgba = ImageProcessor.bitmap2Mat(bm);
 		if(faces != null) {
 			Face face = faces[0];
 			cv_rect = detector.getFaceRect(face);
 			Rect rect = new Rect(cv_rect.x, cv_rect.y, cv_rect.x+cv_rect.width, cv_rect.y+cv_rect.height);
 			bean.setFaceRect(rect);
-			Mat face_mat = new Mat(rgba, cv_rect);
-			q.remove();
+			Bitmap face_bitmap = Bitmap.createBitmap(bm, rect.left, rect.right, rect.width(), rect.height());
+			Mat face_mat = ImageProcessor.bitmap2Mat(face_bitmap);
+			if(q.size() > capacity) {
+				q.remove();	
+			}
+			
+			pre_dur = (int)(System.currentTimeMillis() - start_time);
+			
 			q.add(FrameProcessor.nativeGetMeanValue(face_mat.nativeObj));
 			int sum = 0;
 			for (Integer i : q) {
@@ -70,16 +78,23 @@ public class CalculateDistanceInteraction extends Interaction{
 			}
 			int avg = sum / q.size();
 			
-			drawWidth = FrameProcessor.CalculateBestDistance(avg, rgba.width()*rgba.height(),400);
+			drawWidth = FrameProcessor.CalculateBestDistance(avg, bm.getWidth()*bm.getHeight(),400);
 			bean.setDrawWidth(drawWidth);
 			bean.faceRect_ = rect;
 		} else {
 			bean.setDrawWidth(-1);
 		}
 		/*detect mode*/
-		cacheBean_.mode_ = ModeDetector.detectMode(rgba, cv_rect);
+		if(detectCtr_ < DetectThreshold) {
+			Mat rgba = ImageProcessor.bitmap2Mat(bm);
+			cacheBean_.mode_ = ModeDetector.detectMode(rgba, cv_rect);
+		}
 		
 		Message msg = new Message();
+//		long cur_time = System.currentTimeMillis();
+//		msg.what = (int)(lastTime_ - cur_time);
+//		lastTime_ = cur_time;
+		msg.what = pre_dur;
 		bean.uiInteraction_.sendMessage(msg);
 		return InteractState.CONTINUE;
 	}

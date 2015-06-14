@@ -7,8 +7,9 @@
 	    android:id="@+id/distance_text"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:gravity="end"
-	    style="@style/text_18_ffffff" />
+	    android:layout_gravity="end"
+	    android:background="#ffffff"
+	    style="@style/text_18_000000" />
     
     <ImageView
     	android:id="@+id/approaching_circle"

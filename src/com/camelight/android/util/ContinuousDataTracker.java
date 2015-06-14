@@ -14,7 +14,7 @@ public class ContinuousDataTracker {
 	}
 	private Ambulator ambulator_ = new Ambulator();
 	private ArrayList<Float> storage_ = new ArrayList<Float>();
-	public final int Capacity = 10;
+	public final int Capacity = 6;
 	public ContinuousDataTracker() {}
 	public ContinuousDataTracker(Ambulator am) {
 		if(am != null) {
