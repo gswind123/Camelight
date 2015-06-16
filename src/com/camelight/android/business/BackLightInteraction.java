@@ -6,6 +6,7 @@ import org.opencv.imgproc.Imgproc;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.FaceDetector.Face;
 import android.os.Message;
@@ -35,6 +36,8 @@ public class BackLightInteraction extends Interaction{
 	
 	private final int NoneFaceFrameThreshold = 5;
 	private int noneFaceFrameNum_ = NoneFaceFrameThreshold;
+	
+	private Point focusPoint_ = new Point();
 	
 	private int quitMessage_ = BusinessState.NULL;
 	
@@ -71,13 +74,27 @@ public class BackLightInteraction extends Interaction{
 			if(cur_frame.isMirror()) {
 				face_rect.x = bm.getWidth() - face_rect.x - face_rect.width;
 			}
-			cacheBean_.camera_.setMeteringArea(
-					new Rect(face_rect.x, face_rect.y, face_rect.x+face_rect.width, face_rect.y+face_rect.height), 
-					bm.getWidth(), bm.getHeight());
+			Point face_center = new Point(face_rect.x+face_rect.width/2,
+										  face_rect.y+face_rect.height/2);
+			int dist = (int)Math.sqrt((face_center.x-focusPoint_.x)*(face_center.x-focusPoint_.x) +
+								 (face_center.y-focusPoint_.y)*(face_center.y-focusPoint_.y));
+			if(dist >= face_rect.width) {
+				cacheBean_.camera_.setMeteringArea(
+						new Rect(face_rect.x, face_rect.y, face_rect.x+face_rect.width, face_rect.y+face_rect.height), 
+						bm.getWidth(), bm.getHeight());
+				focusPoint_ = face_center;
+			}
+			
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams)faceBorder_.getLayoutParams();
-			lp.width = face_rect.width;
-			lp.height = face_rect.height;
-			lp.setMargins(face_rect.x, face_rect.y, 0, 0);
+			float rate = cacheBean_.camera_.getMeasuredWidth()*1.f/bm.getWidth();
+			org.opencv.core.Rect cover_rect = face_rect.clone();
+			cover_rect.x *= rate;
+			cover_rect.y *= rate;
+			cover_rect.width *= rate;
+			cover_rect.height *= rate;
+			lp.width = cover_rect.width;
+			lp.height = cover_rect.height;
+			lp.setMargins(cover_rect.x, cover_rect.y, 0, 0);
 			faceBorder_.setLayoutParams(lp);
 			faceBorder_.setVisibility(View.VISIBLE);
 			noneFaceFrameNum_ = 0;

@@ -88,6 +88,7 @@ public class ModeDetector {
 			} else break;
 		}
 		mode = counter.getMaxMode();
+		mode = BusinessMode.BACKLIGHT;
 		return mode;
 	}
 	

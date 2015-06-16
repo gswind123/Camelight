@@ -140,7 +140,7 @@ public class NightSceneGuideInteraction extends Interaction{
 			int cur_std_radius = (int)(startStdRadius_ + (dstStdRadius_-startStdRadius_)*rate);
 			lp.width = cur_std_radius;
 			lp.height = cur_std_radius;
-			//standardCircle_.setLayoutParams(lp);
+			standardCircle_.setLayoutParams(lp);
 			/** update approaching circle*/
 			lp = approachingCircle_.getLayoutParams();
 			if(lp == null) {
@@ -157,11 +157,11 @@ public class NightSceneGuideInteraction extends Interaction{
 				curFitDuration_ += tween;
 				curNonFitDuration_ = 0;
 				cur_radius = cur_std_radius;
-				//standardCircle_.setBackgroundResource(R.drawable.green_circle);
+				standardCircle_.setBackgroundResource(R.drawable.green_circle);
 			} else {
 				curFitDuration_ = 0;
 				curNonFitDuration_ += tween;
-				//standardCircle_.setBackgroundResource(R.drawable.red_circle);
+				standardCircle_.setBackgroundResource(R.drawable.red_circle);
 			}
 			lp.width = cur_radius;
 			lp.height = cur_radius;
@@ -175,12 +175,12 @@ public class NightSceneGuideInteraction extends Interaction{
 			if(isPausing_) {
 				return true;
 			}
-			String text = "计算半径:"+String.valueOf(drawWidth_)+"\n";
-			text += "目标半径:"+dstRadius_+"\n";
-			text += "是否可见:"+isVisible_ + "\n";
-			text += "算法开销:"+cost_+"\n";
-			text += "是否动画:"+isAnimating;
-			distanceText_.setText(text);
+//			String text = "计算半径:"+String.valueOf(drawWidth_)+"\n";
+//			text += "目标半径:"+dstRadius_+"\n";
+//			text += "是否可见:"+isVisible_ + "\n";
+//			text += "算法开销:"+cost_+"\n";
+//			text += "是否动画:"+isAnimating;
+//			distanceText_.setText(text);
 			/** none 0 means face-detected*/
 			if (drawWidth_ >= 0 ) {
 				if(Float.isNaN(drawWidth_)) {
@@ -325,9 +325,9 @@ public class NightSceneGuideInteraction extends Interaction{
 		
 		/*judge if to hide guide*/
 		if(distanceAnimation_.isVisible() && distanceAnimation_.isDistanceFit()) {
-//			distanceAnimation_.hideGuide();
+			distanceAnimation_.hideGuide();
 		}
-		else if(distanceAnimation_.isVisible() ==false && distanceAnimation_.isDistanceNonfit()){
+		else if(!distanceAnimation_.isVisible() && distanceAnimation_.isDistanceNonfit()){
 			distanceAnimation_.showGuide();
 		}
 		

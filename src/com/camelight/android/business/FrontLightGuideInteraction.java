@@ -2,6 +2,7 @@ package com.camelight.android.business;
 
 import java.sql.Date;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.Image;
@@ -98,7 +99,7 @@ public class FrontLightGuideInteraction extends Interaction{
 		 * */
 		private final float levelBounds_[] = new float[]{
 //			0, 35.f, 50.f, 80.f, 120.f
-			0, 50.f, 60.f, 80.f, 120.f
+			0, 40.f, 60.f, 80.f, 120.f
 		};
 		private final float levelSpeed[] = new float[]{
 			0.01f, /*L1:*/0.01f, /*L2:*/6.f, /*L3:*/12.f, /*L4:*/18.f,/*L5:*/24.f   	
@@ -158,7 +159,7 @@ public class FrontLightGuideInteraction extends Interaction{
 				str += calcDeltaDegree(lightSrcOrientation_);
 				str += "¶È";
 				
-				text.setText(str);
+//				text.setText(str);
 				
 				/** judge if front light is satisfied*/
 				if(curLevel_ <= 1) {
@@ -172,7 +173,7 @@ public class FrontLightGuideInteraction extends Interaction{
 			return true;
 		}
 		
-		@Override
+		@SuppressLint("NewApi") @Override
 		public boolean start() {
 			screenWidth_ = DeviceUtil.getScreenSize(cacheBean_.context_)[0];
 			CameraActivity act = (CameraActivity) cacheBean_.context_;
