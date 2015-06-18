@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
@@ -41,6 +42,7 @@ import com.camelight.android.business.FrontLightGuideInteraction;
 import com.camelight.android.business.Interactor;
 import com.camelight.android.business.NightSceneGuideInteraction;
 import com.camelight.android.model.BackLightCacheBean;
+import com.camelight.android.model.CacheBean;
 import com.camelight.android.model.CalculateDistanceCacheBean;
 import com.camelight.android.model.CameraFrame;
 import com.camelight.android.model.DetectDegreeCacheBean;
@@ -156,6 +158,12 @@ public class CameraActivity extends FragmentActivity {
         cameraLayout_ = (FrameLayout) findViewById(R.id.camera_frame);
         btnSwitchCamera_ = (ImageView)findViewById(R.id.btn_switch_camera);
         modeIcon_ = (ImageView)findViewById(R.id.mode_icon);
+        modeIcon_.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startSelectMode();
+			}
+		});
         Handler handler = new Handler();
         interactor_ = new Interactor(handler);
         
@@ -342,5 +350,15 @@ public class CameraActivity extends FragmentActivity {
     	} else {
     		camera_.switchCamera(CameraView.CAMERA_FACE_BACK);
     	}
+    }
+    
+    public void startSelectMode() {
+    	DetectModeCacheBean cache_bean = new DetectModeCacheBean();
+    	SelectModeFragment fragment = SelectModeFragment.createInstance(cache_bean);
+    	FragmentManager fm = this.getSupportFragmentManager();
+    	FragmentTransaction ft = fm.beginTransaction();
+    	ft.add(android.R.id.content ,fragment, SelectModeFragment.TAG);
+    	ft.addToBackStack(SelectModeFragment.TAG);
+    	ft.commitAllowingStateLoss();
     }
 }

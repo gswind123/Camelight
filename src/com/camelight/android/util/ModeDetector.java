@@ -70,6 +70,7 @@ public class ModeDetector {
 	static private ModeDetector instance_ = new ModeDetector();
 	
 	private ArrayList<ModeWithTime> list_ = new ArrayList<ModeWithTime>();
+	private BusinessMode settedMode_ = BusinessMode.NULL;
 	
 	private BusinessMode privateDetectMode(Mat mat , Rect face_rect) {
 		BusinessMode mode = FrameProcessor.AnalyzeMode(mat.nativeObj, face_rect);
@@ -88,11 +89,16 @@ public class ModeDetector {
 			} else break;
 		}
 		mode = counter.getMaxMode();
-		mode = BusinessMode.BACKLIGHT;
+		if(settedMode_ != BusinessMode.NULL) {
+			mode = settedMode_;
+		}
 		return mode;
 	}
 	
 	static public BusinessMode detectMode(Mat mat, Rect face_rect) {
 		return instance_.privateDetectMode(mat, face_rect);
+	}
+	static public void setMode(BusinessMode mode){
+		instance_.settedMode_ = mode;
 	}
 }

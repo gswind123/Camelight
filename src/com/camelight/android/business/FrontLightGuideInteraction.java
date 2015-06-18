@@ -159,7 +159,7 @@ public class FrontLightGuideInteraction extends Interaction{
 				str += calcDeltaDegree(lightSrcOrientation_);
 				str += "¶È";
 				
-//				text.setText(str);
+				text.setText(str);
 				
 				/** judge if front light is satisfied*/
 				if(curLevel_ <= 1) {

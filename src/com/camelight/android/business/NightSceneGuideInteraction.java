@@ -175,12 +175,12 @@ public class NightSceneGuideInteraction extends Interaction{
 			if(isPausing_) {
 				return true;
 			}
-//			String text = "计算半径:"+String.valueOf(drawWidth_)+"\n";
-//			text += "目标半径:"+dstRadius_+"\n";
-//			text += "是否可见:"+isVisible_ + "\n";
-//			text += "算法开销:"+cost_+"\n";
-//			text += "是否动画:"+isAnimating;
-//			distanceText_.setText(text);
+			String text = "计算半径:"+String.valueOf(drawWidth_)+"\n";
+			text += "目标半径:"+dstRadius_+"\n";
+			text += "是否可见:"+isVisible_ + "\n";
+			text += "算法开销:"+cost_+"\n";
+			text += "是否动画:"+isAnimating;
+			distanceText_.setText(text);
 			/** none 0 means face-detected*/
 			if (drawWidth_ >= 0 ) {
 				if(Float.isNaN(drawWidth_)) {
